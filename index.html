@@ -1,0 +1,1695 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f5ca8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bill Book">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<title>Bill Book</title>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>
+/* Layout: single-column phone app — sticky top bar, scrolling cards, fixed bottom tab bar. */
+:root {
+  --bg: #eceff3;
+  --surface: #ffffff;
+  --sunk: #f4f6f9;
+  --ink: #16202b;
+  --muted: #5a6878;
+  --line: #d3dae2;
+  --accent: #1f5ca8;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3ecf8;
+  --warn: #8a5300;
+  --warn-soft: #fbf0dd;
+  --danger: #b3261e;
+  --ok: #1d6f45;
+  --paper-shadow: 0 1px 2px rgba(20,30,45,.12), 0 6px 18px rgba(20,30,45,.08);
+  --ui: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e141a; --surface: #172029; --sunk: #111920; --ink: #e6ecf2; --muted: #98a6b4; --line: #2a3643;
+  --accent: #6aa6ff; --accent-ink: #08121e; --accent-soft: #18304d; --warn: #f0b45a; --warn-soft: #33270f;
+  --danger: #ff8a80; --ok: #6fd3a0; --paper-shadow: 0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.35); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e141a; --surface: #172029; --sunk: #111920; --ink: #e6ecf2; --muted: #98a6b4; --line: #2a3643;
+  --accent: #6aa6ff; --accent-ink: #08121e; --accent-soft: #18304d; --warn: #f0b45a; --warn-soft: #33270f;
+  --danger: #ff8a80; --ok: #6fd3a0; --paper-shadow: 0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.35); color-scheme: dark }
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--ink); }
+body { font-family: var(--ui); font-size: 15px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
+button, input, select, textarea { font: inherit; color: inherit; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  border-bottom: 1px solid var(--line); padding: 10px 16px; }
+.top-in { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+.mark { width: 34px; height: 34px; border-radius: 8px; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font-weight: 700; font-size: 17px; flex: none; overflow: hidden; }
+.mark img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+.top b { display: block; font-size: 15px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top small { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.dot.on { background: var(--ok); }
+.top .grow { min-width: 0; flex: 1; }
+
+main { max-width: 680px; margin: 0 auto; padding: 14px 16px calc(150px + env(safe-area-inset-bottom, 0px)); }
+section { display: grid; gap: 14px; }
+h2 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0; font-weight: 600; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 12px; min-width: 0; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.grid3 { display: grid; grid-template-columns: 1.2fr 1fr .9fr; gap: 10px; }
+.span2 { grid-column: 1 / -1; }
+@media (max-width: 380px) { .grid2 { grid-template-columns: 1fr; } }
+label.f { display: grid; gap: 4px; min-width: 0; }
+label.f > span { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .02em; }
+input[type=text], input[type=date], input[type=number], input[type=email], input[type=tel], select, textarea {
+  width: 100%; min-width: 0; min-height: 44px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--sunk); font-size: 16px; }
+textarea { min-height: 70px; resize: vertical; line-height: 1.35; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.hint { font-size: 12px; color: var(--muted); }
+.chk { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 15px; }
+.chk input { width: 20px; height: 20px; accent-color: var(--accent); }
+
+.btn { min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface);
+  font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.ghost { background: transparent; }
+.btn.small { min-height: 34px; padding: 0 12px; font-size: 14px; }
+.btn.danger { color: var(--danger); }
+.btn:disabled { opacity: .5; cursor: default; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.row > .btn.grow { flex: 1; }
+
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { min-height: 40px; border: 0; background: var(--sunk); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+.item { border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 10px; background: var(--sunk); }
+.item-h { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); font-weight: 600; }
+.item-amt { font-size: 14px; color: var(--ink); }
+.item input, .item select { background: var(--surface); }
+.bill-h { display: grid; gap: 2px; min-width: 0; }
+.savestate { font-size: 12.5px; color: var(--muted); }
+.savestate[data-kind="saved"] { color: var(--ok); }
+.savestate[data-kind="clash"], .savestate[data-kind="error"] { color: var(--danger); font-weight: 600; }
+.totalbar .btn { padding: 0 13px; }
+.hsn-note { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+.hsn-acts { display: inline-flex; gap: 14px; align-items: center; }
+.hsn-note a, .linkbtn { color: var(--accent); font-weight: 600; font-size: 12.5px; text-decoration: none; }
+.linkbtn { border: 0; background: none; padding: 4px 0; cursor: pointer; font-family: inherit; }
+.xbtn { border: 0; background: transparent; color: var(--danger); font-weight: 600; cursor: pointer; min-height: 32px; padding: 0 6px; }
+
+.sum { display: grid; gap: 6px; }
+.sum div { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.sum div span:first-child { color: var(--muted); }
+.sum .tot { border-top: 1px solid var(--line); padding-top: 8px; font-size: 17px; font-weight: 700; }
+.sum .tot span:first-child { color: var(--ink); }
+.words { font-size: 13px; color: var(--muted); }
+
+.warns { background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; display: grid; gap: 4px; }
+.warns b { font-weight: 700; }
+.note { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; }
+.note.setup { display: grid; gap: 10px; justify-items: start; }
+.stack { display: grid; gap: 10px; }
+.err { color: var(--danger); font-weight: 600; }
+details.howto { font-size: 13.5px; }
+details.howto summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 32px; display: flex; align-items: center; }
+details.howto ol { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+details.howto a { color: var(--accent); }
+details.howto code { font-family: var(--mono); font-size: 12.5px; background: var(--sunk); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+#storeState { cursor: default; }
+
+.totalbar { position: fixed; left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom, 0px)); z-index: 6;
+  padding: 8px 16px; background: var(--surface); border-top: 1px solid var(--line); }
+.totalbar-in { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+.totalbar .t { flex: 1; min-width: 0; }
+.totalbar .t small { display: block; color: var(--muted); font-size: 12px; }
+.totalbar .t b { font-size: 18px; }
+
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 7; background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+nav.tabs .in { max-width: 680px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
+nav.tabs button { border: 0; background: transparent; min-height: 58px; display: grid; place-items: center; gap: 2px;
+  font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; padding: 6px 0; }
+nav.tabs svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+nav.tabs button[aria-current="page"] { color: var(--accent); }
+
+.paper-wrap { background: var(--sunk); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; }
+#sheet { display: block; width: 100%; height: auto; background: #fff; box-shadow: var(--paper-shadow); border-radius: 2px; }
+
+.list { display: grid; gap: 8px; }
+.inv { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; display: grid; gap: 8px; }
+.inv-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.inv-top b { font-size: 15px; }
+.inv-sub { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.pill { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+.empty { text-align: center; color: var(--muted); padding: 28px 12px; border: 1px dashed var(--line); border-radius: var(--r); }
+
+.imgslot { display: flex; align-items: center; gap: 12px; }
+.imgslot .box { width: 84px; height: 64px; border: 1px solid var(--line); border-radius: 8px; background: #fff; display: grid; place-items: center; overflow: hidden; flex: none; }
+.imgslot .box img { width: 100%; height: 100%; object-fit: contain; }
+.imgslot .box span { font-size: 11px; color: #8a96a3; }
+.file { position: relative; overflow: hidden; }
+.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(130px + env(safe-area-inset-bottom, 0px)); z-index: 9;
+  background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px);
+  box-shadow: var(--paper-shadow); }
+@media (prefers-reduced-motion: no-preference) { #toast { transition: opacity .2s; } }
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="top-in">
+    <div class="mark" id="mark">₹</div>
+    <div class="grow">
+      <b id="bizName">Bill Book</b>
+      <small><i class="dot" id="storeDot"></i><span id="storeState">Connecting…</span></small>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- NEW / EDIT BILL -->
+  <section id="v-bill">
+    <div class="note setup" id="setupNote" hidden>
+      <div><b>Set up your bill book.</b> Restore your backup file to bring in your business details, logo, customers and old bills. Or fill them in the <b>Business</b> tab.</div>
+      <div class="row">
+        <span class="btn small file primary">Restore from backup file<input type="file" id="importFile2" accept=".json,application/json"></span>
+        <button class="btn small" id="c-restore2" type="button" hidden>Restore from Google Drive</button>
+      </div>
+    </div>
+    <div class="card-h"><div class="bill-h"><h2 id="billTitle">New bill</h2><span class="savestate" id="saveState"></span></div><button class="btn small" id="btnNew" type="button">Start fresh</button></div>
+
+    <div class="card">
+      <div class="grid2">
+        <label class="f"><span>Invoice No.</span><input type="text" id="f-no" data-b="no" inputmode="numeric"></label>
+        <label class="f"><span>Date</span><input type="date" id="f-date" data-b="date"></label>
+        <label class="f"><span>Mode / terms of payment</span><select id="f-terms" data-b="payTerms"><option>Online/UPI</option><option>Cash</option><option>Bank/Cheque</option></select></label>
+        <label class="f"><span>Buyer's order no.</span><input type="text" id="f-bon" data-b="buyerOrderNo"></label>
+        <label class="f"><span>Delivery note</span><input type="text" id="f-dn" data-b="deliveryNote"></label>
+        <label class="f"><span>Copy</span>
+          <select id="f-copy" data-b="copyLabel">
+            <option>Original for recipient</option><option>Duplicate for transporter</option><option>Triplicate for supplier</option>
+          </select></label>
+        <label class="f span2"><span>Place of supply (where goods are delivered)</span><select id="f-pos" data-b="pos"></select></label>
+        <label class="f"><span>Vehicle no. (optional)</span><input type="text" id="f-veh" data-b="vehicleNo"></label>
+        <label class="f"><span>e-Way bill no. (optional)</span><input type="text" id="f-eway" data-b="ewayBill" inputmode="numeric"></label>
+      </div>
+      <datalist id="dl-terms"><option value="online"><option value="cash"><option value="cheque"><option value="NEFT/RTGS"><option value="UPI"><option value="credit 30 days"></datalist>
+    </div>
+
+    <div class="card" id="card-consignee"></div>
+    <label class="chk"><input type="checkbox" id="f-same" data-b="buyerSame"> Bill to the same party as ship to</label>
+    <div class="card" id="card-buyer" hidden></div>
+
+    <div class="card">
+      <div class="card-h"><h2>Items</h2><span class="hint" id="itemCount"></span></div>
+      <div id="items" class="list"></div>
+      <button class="btn" id="btnAddItem" type="button">+ Add item</button>
+    </div>
+
+    <div class="card">
+      <h2>GST</h2>
+      <div class="seg" role="group" aria-label="Tax type">
+        <button type="button" data-tax="auto">Auto</button>
+        <button type="button" data-tax="intra">CGST + SGST</button>
+        <button type="button" data-tax="inter">IGST</button>
+      </div>
+      <div class="hint" id="taxHint"></div>
+      <label class="chk"><input type="checkbox" id="f-round" data-b="roundOff"> Round off total to nearest rupee</label>
+      <div class="warns" id="warns" hidden></div>
+      <div class="sum" id="sum"></div>
+      <div class="words" id="words"></div>
+    </div>
+
+    <div class="row">
+      <button class="btn primary grow" id="btnSave" type="button">Save bill</button>
+      <button class="btn grow" id="btnPdf1" type="button">Download PDF</button>
+      <button class="btn grow" id="btnShare1" type="button" hidden>Share PDF</button>
+    </div>
+  </section>
+
+  <!-- PREVIEW -->
+  <section id="v-preview" hidden>
+    <div class="card-h"><h2 id="pvTitle">Preview</h2><span class="hint" id="pvSize"></span></div>
+    <div class="warns" id="pvWarn" hidden></div>
+    <div class="paper-wrap"><canvas id="sheet" aria-label="Invoice preview"></canvas></div>
+    <div class="row">
+      <button class="btn primary grow" id="btnPdf2" type="button">Download PDF</button>
+      <button class="btn grow" id="btnShare2" type="button" hidden>Share PDF</button>
+      <button class="btn grow" id="btnEdit" type="button">Edit bill</button>
+    </div>
+  </section>
+
+  <!-- SAVED -->
+  <section id="v-saved" hidden>
+    <div class="card-h"><h2>Saved bills</h2><span class="hint" id="savedCount"></span></div>
+    <input type="text" id="q" placeholder="Search by bill no. or party" aria-label="Search saved bills">
+    <div class="list" id="savedList"></div>
+  </section>
+
+  <!-- BUSINESS -->
+  <section id="v-biz" hidden>
+    <h2>Your business</h2>
+    <div class="card">
+      <label class="f"><span>Business name</span><input type="text" id="p-name"></label>
+      <label class="f"><span>Address (prints as 2–3 lines)</span><textarea id="p-address" rows="3"></textarea></label>
+      <div class="grid2">
+        <label class="f"><span>GSTIN/UIN</span><input type="text" id="p-gstin" autocapitalize="characters"></label>
+        <label class="f"><span>State</span><select id="p-stateCode"></select></label>
+        <label class="f"><span>Email</span><input type="email" id="p-email"></label>
+        <label class="f"><span>Mobile no.</span><input type="tel" id="p-mobile"></label>
+        <label class="f span2"><span>Extra header line (optional)</span><input type="text" id="p-extraLine" placeholder="e.g. Website or second phone"></label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Logo and signature</h2>
+      <div class="imgslot"><div class="box" id="logoBox"><span>No logo</span></div>
+        <div class="row"><span class="btn small file">Upload logo<input type="file" id="p-logo" accept="image/*"></span><button class="btn small ghost danger" id="rmLogo" type="button">Remove</button></div></div>
+      <div class="imgslot"><div class="box" id="signBox"><span>No sign</span></div>
+        <div class="row"><span class="btn small file">Upload signature / stamp<input type="file" id="p-sign" accept="image/*"></span><button class="btn small ghost danger" id="rmSign" type="button">Remove</button></div></div>
+      <div class="hint">A photo of your signature or stamp on white paper works. It prints above "Authorized Signatory".</div>
+    </div>
+    <div class="card">
+      <h2>Bill footer</h2>
+      <label class="f"><span>Declaration</span><textarea id="p-declaration" rows="3"></textarea></label>
+      <div class="grid2">
+        <label class="f"><span>Jurisdiction city</span><input type="text" id="p-city"></label>
+        <label class="f"><span>Signatory line</span><input type="text" id="p-signFor" placeholder="For Your Business"></label>
+      </div>
+      <label class="f"><span>Bank details (optional, prints under declaration)</span><textarea id="p-bank" rows="2" placeholder="Bank: … A/c: … IFSC: …"></textarea></label>
+    </div>
+    <div class="card">
+      <h2>Defaults for new bills</h2>
+      <div class="grid2">
+        <label class="f span2"><span>Default place of supply</span><select id="p-defaultPos"></select></label>
+        <label class="f"><span>Paper size</span><select id="p-pageSize"><option value="letter">Letter (like your sample)</option><option value="a4">A4</option></select></label>
+        <label class="f"><span>GST rate %</span><select id="p-defaultGst"><option>0</option><option>5</option><option>12</option><option selected>18</option><option>28</option></select></label>
+        <label class="f"><span>Unit</span><input type="text" id="p-defaultUnit" list="dl-units"></label>
+        <label class="f"><span>Last bill number used</span><input type="text" id="p-lastBillNo" placeholder="e.g. 56" inputmode="numeric"></label>
+        <label class="f"><span>Payment mode</span><select id="p-defaultTerms"><option>Online/UPI</option><option>Cash</option><option>Bank/Cheque</option></select></label>
+      </div>
+    </div>
+    <button class="btn primary" id="btnSaveBiz" type="button">Save business details</button>
+
+    <h2 style="margin-top:10px">Customers</h2>
+    <div class="list" id="custList"></div>
+
+    <h2 style="margin-top:10px">Backup</h2>
+    <div class="card">
+      <div class="hint">Download everything (business, customers, bills) as one file, or restore from one.</div>
+      <div class="row">
+        <button class="btn small" id="btnExport" type="button">Download backup</button>
+        <span class="btn small file">Restore from backup<input type="file" id="importFile" accept=".json,application/json"></span>
+      </div>
+    </div>
+
+    <div class="card" id="cloudCard" hidden>
+      <h2>Cloud backup · Google Drive</h2>
+      <div class="hint" id="cloudStatus"></div>
+      <div id="cloudSetup" class="stack">
+        <label class="f"><span>Google Client ID</span><input type="text" id="c-client" placeholder="123456-abc.apps.googleusercontent.com" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
+        <button class="btn primary" id="c-connect" type="button">Connect Google account</button>
+        <details class="howto">
+          <summary>How to get a Client ID (one time, free, about 10 minutes)</summary>
+          <ol>
+            <li>On a computer, open <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">console.cloud.google.com</a>, sign in with any Google account and create a project named <b>Bill Book</b>.</li>
+            <li>Open <a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Google Drive API</a> and tap <b>Enable</b>.</li>
+            <li>Open <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> → <b>Get started</b>. App name: Bill Book. Audience: <b>External</b>. Add your email as contact.</li>
+            <li>Under <b>Audience</b>, tap <b>Publish app</b> (or add each Google account you'll use as a <b>Test user</b>).</li>
+            <li>Under <b>Clients</b> → <b>Create client</b> → type <b>Web application</b>. In <b>Authorized JavaScript origins</b> add <code id="c-origin">this app's address</code>. Create.</li>
+            <li>Copy the <b>Client ID</b> (ends with .apps.googleusercontent.com), paste it above, and tap <b>Connect Google account</b>.</li>
+          </ol>
+        </details>
+      </div>
+      <div id="cloudOn" class="stack" hidden>
+        <label class="chk"><input type="checkbox" id="c-pdfs"> Upload each bill's PDF to Drive</label>
+        <div class="row">
+          <button class="btn small primary" id="c-now" type="button">Back up now</button>
+          <button class="btn small" id="c-restore" type="button">Restore from Drive</button>
+        </div>
+        <div class="row">
+          <button class="btn small ghost" id="c-switch" type="button">Switch Google account</button>
+          <button class="btn small ghost danger" id="c-off" type="button">Disconnect</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<datalist id="dl-units"><option value="kg"><option value="mt"><option value="nos"><option value="pcs"><option value="ft"><option value="m"><option value="sq ft"><option value="set"><option value="ltr"></datalist>
+
+<div class="totalbar" id="totalbar">
+  <div class="totalbar-in">
+    <div class="t"><small id="tbSub">Total</small><b class="num" id="tbTotal">0.00</b></div>
+    <button class="btn" id="btnNext" type="button" hidden>Next bill</button>
+    <button class="btn primary" id="btnPreview" type="button">Preview</button>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="in">
+    <button type="button" data-view="bill"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg>Bill</button>
+    <button type="button" data-view="preview"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Preview</button>
+    <button type="button" data-view="saved"><svg viewBox="0 0 24 24"><path d="M4 5h16v4H4zM5 9v10h14V9M10 13h4"/></svg>Saved</button>
+    <button type="button" data-view="biz"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>Business</button>
+  </div>
+</nav>
+<div id="toast" hidden></div>
+
+<script src="vendor/jspdf.umd.min.js"></script>
+<script>
+// ==ENGINE START==
+const GST_STATES = {
+  "01":"Jammu & Kashmir","02":"Himachal Pradesh","03":"Punjab","04":"Chandigarh","05":"Uttarakhand",
+  "06":"Haryana","07":"Delhi","08":"Rajasthan","09":"Uttar Pradesh","10":"Bihar","11":"Sikkim",
+  "12":"Arunachal Pradesh","13":"Nagaland","14":"Manipur","15":"Mizoram","16":"Tripura","17":"Meghalaya",
+  "18":"Assam","19":"West Bengal","20":"Jharkhand","21":"Odisha","22":"Chhattisgarh","23":"Madhya Pradesh",
+  "24":"Gujarat","26":"Dadra & Nagar Haveli and Daman & Diu","27":"Maharashtra","29":"Karnataka","30":"Goa",
+  "31":"Lakshadweep","32":"Kerala","33":"Tamil Nadu","34":"Puducherry","35":"Andaman & Nicobar Islands",
+  "36":"Telangana","37":"Andhra Pradesh","38":"Ladakh","97":"Other Territory"
+};
+const num = v => { const n = parseFloat(String(v ?? "").replace(/,/g, "")); return isFinite(n) ? n : 0; };
+const r2 = n => Math.round((n + (n >= 0 ? 1 : -1) * 1e-9) * 100) / 100;
+function fmt(n) {
+  n = r2(num(n)); if (Math.abs(n) < 0.005) n = 0;
+  return n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtQty(n) {
+  n = num(n);
+  return n.toLocaleString("en-IN", { maximumFractionDigits: 3 });
+}
+function gstCode(gstin) {
+  const m = String(gstin || "").trim().match(/^(\d{2})[A-Z0-9]{13}$/i);
+  return m && GST_STATES[m[1]] ? m[1] : "";
+}
+function validGstin(g) { return /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/i.test(String(g || "").trim()); }
+function dmy(iso) {
+  const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : String(iso || "");
+}
+
+const ONES = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve",
+  "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+const TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+function w2(n) { return n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? " " + ONES[n % 10] : ""); }
+function w3(n) {
+  const h = Math.floor(n / 100), r = n % 100;
+  return [h ? ONES[h] + " Hundred" : "", r ? w2(r) : ""].filter(Boolean).join(" ");
+}
+function intWords(n) {
+  if (n === 0) return "Zero";
+  const parts = [];
+  const crore = Math.floor(n / 1e7), lakh = Math.floor(n / 1e5) % 100, th = Math.floor(n / 1000) % 100, rest = n % 1000;
+  if (crore) parts.push(intWords(crore) + " Crore");
+  if (lakh) parts.push(w2(lakh) + " Lakh");
+  if (th) parts.push(w2(th) + " Thousand");
+  if (rest) parts.push(w3(rest));
+  return parts.join(" ");
+}
+function amountWords(x) {
+  const paiseTotal = Math.round(Math.abs(num(x)) * 100);
+  const rupees = Math.floor(paiseTotal / 100), paise = paiseTotal % 100;
+  let s = intWords(rupees) + " Rupees";
+  if (paise) s += " And " + w2(paise) + " Paise";
+  return s + " Only";
+}
+
+// Place of supply: the bill's own field (where delivery ends); falls back to the bill-to party's state for old bills.
+function placeOfSupply(inv) {
+  if (inv.pos && GST_STATES[inv.pos]) return inv.pos;
+  const p = inv.buyerSame ? inv.consignee : inv.buyer;
+  return (p && (p.code || gstCode(p.gstin))) || "";
+}
+function compute(inv, prof) {
+  const items = (inv.items || []).map(it => ({ ...it, amount: r2(num(it.qty) * num(it.rate)), gst: num(it.gst) }));
+  const taxable = r2(items.reduce((a, b) => a + b.amount, 0));
+  const seller = prof.stateCode || gstCode(prof.gstin);
+  const pos = placeOfSupply(inv);
+  const autoMode = pos && seller && pos !== seller ? "inter" : "intra";
+  const mode = inv.taxMode === "intra" || inv.taxMode === "inter" ? inv.taxMode : autoMode;
+  const gmap = new Map();
+  for (const it of items) {
+    if (!it.amount && !it.desc) continue;
+    const key = (it.hsn || "").trim() + "|" + it.gst;
+    const g = gmap.get(key) || { hsn: (it.hsn || "").trim(), rate: it.gst, taxable: 0 };
+    g.taxable = r2(g.taxable + it.amount); gmap.set(key, g);
+  }
+  const groups = [...gmap.values()].map(g => {
+    if (mode === "intra") { const c = r2(g.taxable * g.rate / 200); return { ...g, cgst: c, sgst: c, igst: 0, tax: r2(2 * c) }; }
+    const i = r2(g.taxable * g.rate / 100); return { ...g, cgst: 0, sgst: 0, igst: i, tax: i };
+  });
+  const cgst = r2(groups.reduce((a, g) => a + g.cgst, 0));
+  const sgst = r2(groups.reduce((a, g) => a + g.sgst, 0));
+  const igst = r2(groups.reduce((a, g) => a + g.igst, 0));
+  const tax = r2(cgst + sgst + igst);
+  const grand = r2(taxable + tax);
+  const total = inv.roundOff === false ? grand : Math.round(grand);
+  const roundOff = r2(total - grand);
+  const rates = [...new Set(groups.map(g => g.rate))];
+  const warnings = [];
+  const chk = (p, label) => {
+    if (!p) return;
+    const gc = gstCode(p.gstin);
+    if (p.gstin && !validGstin(p.gstin)) warnings.push(`${label} GSTIN doesn't look valid (15 characters, e.g. 08ABCDE1234F1Z5).`);
+  };
+  chk(inv.consignee, "Consignee"); if (!inv.buyerSame) chk(inv.buyer, "Buyer");
+  if (inv.taxMode && inv.taxMode !== "auto" && inv.taxMode !== autoMode)
+    warnings.push(autoMode === "inter" ? "Place of supply is another state, so GST should be IGST. Tax type is forced to CGST + SGST." : "Place of supply is your state, so GST should be CGST + SGST. Tax type is forced to IGST.");
+  if (items.some(it => it.desc && !String(it.hsn || "").trim())) warnings.push("HSN/SAC code is missing on an item. It's required on B2B tax invoices.");
+  return { items, taxable, mode, autoMode, seller, pos, groups, cgst, sgst, igst, tax, grand, total, roundOff, rates,
+    words: amountWords(total), taxWords: amountWords(tax), warnings };
+}
+
+// Layout: draws one invoice page through a renderer R (canvas or jsPDF), units in points.
+const PAGE = { letter: { w: 612, h: 792 }, a4: { w: 595.28, h: 841.89 } };
+function drawInvoice(R, inv, prof, c, page) {
+  const W = page.w, H = page.h, L = 40, RX = W - 40, FW = RX - L;
+  const S = "serif", A = "sans", GREY = "#c4c4c4", BLUE = "#2f5fa7";
+  const wid = (s, o) => R.width(String(s ?? ""), o);
+  const T = (s, x, y, o = {}) => {
+    s = String(s ?? "");
+    if (o.maxW && s) { const w = wid(s, o); if (w > o.maxW) o = { ...o, s: (o.s || 10) * o.maxW / w }; }
+    R.text(s, x, y, o);
+  };
+  const wrap = (s, maxW, o) => {
+    const out = [];
+    for (const para of String(s ?? "").split(/\n/)) {
+      const words = para.split(/\s+/).filter(Boolean); let line = "";
+      if (!words.length) { out.push(""); continue; }
+      for (const w of words) {
+        const t = line ? line + " " + w : w;
+        if (wid(t, o) <= maxW || !line) line = t; else { out.push(line); line = w; }
+      }
+      out.push(line);
+    }
+    return out;
+  };
+  const pair = (label, value, x, y, o) => {
+    T(label, x, y, { ...o, b: 1 }); T(value, x + wid(label, { ...o, b: 1 }) + 1.5, y, { ...o, b: 0 });
+  };
+  R.lineWidth(0.75);
+  let y = 20;
+
+  // Header
+  const hdrH = 70;
+  R.rect(L, y, FW, hdrH);
+  let leftMax = L + FW * 0.505 - 10;
+  if (prof.logo) {
+    const bw = 104, bh = hdrH - 8, lw = prof.logoW || 1, lh = prof.logoH || 1;
+    const k = Math.min(bw / lw, bh / lh), iw = lw * k, ih = lh * k;
+    R.image(prof.logo, RX - 8 - bw + (bw - iw) / 2, y + 4 + (bh - ih) / 2, iw, ih);
+  }
+  const nameSize = Math.min(19, 19 * (FW * 0.62) / Math.max(1, wid((prof.name || "").toUpperCase(), { f: S, s: 19, b: 1 })));
+  T((prof.name || "Your Business Name").toUpperCase(), L + 6, y + 21, { f: S, s: nameSize, b: 1 });
+  const addr = wrap(prof.address || "", leftMax - (L + 6), { f: S, s: 9.5 }).slice(0, 3);
+  let ay = y + 35;
+  for (const ln of addr) { T(ln, L + 6, ay, { f: S, s: 9.5 }); ay += 11; }
+  const sx = L + 6;
+  pair("State: ", prof.state || GST_STATES[prof.stateCode] || "", sx, ay, { f: S, s: 9.5 });
+  pair("Code: ", prof.stateCode || "", sx + 78, ay, { f: S, s: 9.5 });
+  const ex = L + FW * 0.505;
+  let ey = y + 35;
+  if (prof.email) { pair("Email: ", prof.email, ex, ey, { f: S, s: 9.5 }); ey += 11; }
+  if (prof.mobile) { pair("Mobile No.: ", prof.mobile, ex, ey, { f: S, s: 9.5 }); ey += 11; }
+  if (prof.extraLine) { T(prof.extraLine, ex, ey, { f: S, s: 9.5 }); }
+  y += hdrH;
+
+  // Title row
+  R.rect(L, y, FW, 21);
+  pair("GSTIN/UIN: ", prof.gstin || "", L + 6, y + 14.5, { f: S, s: 10 });
+  T("TAX INVOICE", L + FW * 0.47, y + 15.5, { f: S, s: 15.5, b: 1, align: "center", color: BLUE });
+  T(inv.copyLabel || "Original for recipient", L + FW * 0.83, y + 14.5, { f: S, s: 10, b: 1, align: "center" });
+  y += 21;
+
+  // Details
+  const top = y, D = L + FW * 0.385;
+  const lrows = [["Invoice No.: ", inv.no], ["Dated: ", dmy(inv.date)], ["Delivery Note: ", inv.deliveryNote],
+    ["Mode/ Terms of Payment: ", inv.payTerms], ["Buyer's Order No.: ", inv.buyerOrderNo]];
+  if (c.pos) lrows.push(["Place of Supply: ", `${GST_STATES[c.pos]} (${c.pos})`]);
+  if (inv.vehicleNo) lrows.push(["Vehicle No.: ", inv.vehicleNo]);
+  if (inv.ewayBill) lrows.push(["e-Way Bill No.: ", inv.ewayBill]);
+  if (inv.dispatchedThrough) lrows.push(["Dispatched through: ", inv.dispatchedThrough]);
+  let ly = top + 15;
+  for (const [k, v] of lrows) {
+    const lines = wrap(v || "", D - L - 12 - wid(k, { f: S, s: 9.5, b: 1 }), { f: S, s: 9.5 });
+    pair(k, lines[0] || "", L + 6, ly, { f: S, s: 9.5 });
+    for (const extra of lines.slice(1)) { ly += 11; T(extra, L + 6 + wid(k, { f: S, s: 9.5, b: 1 }), ly, { f: S, s: 9.5 }); }
+    ly += 14.5;
+  }
+  const px = D + 6, nx = L + FW * 0.57, nW = RX - 6 - nx;
+  const party = (label, p, ry) => {
+    p = p || {};
+    T(label, px, ry, { f: S, s: 9.5, b: 1 });
+    const nameLines = wrap(p.name || "", nW, { f: S, s: 9.5, b: 1 });
+    nameLines.forEach((ln, i) => T(ln, nx, ry + i * 11, { f: S, s: 9.5, b: 1 }));
+    ry += nameLines.length * 11;
+    for (const ln of wrap(p.address || "", nW, { f: S, s: 9.5 })) { T(ln, nx, ry, { f: S, s: 9.5 }); ry += 11; }
+    pair("State: ", p.state || GST_STATES[p.code] || "", nx, ry, { f: S, s: 9.5 });
+    pair("Code: ", p.code || "", nx + Math.max(78, wid("State: " + (p.state || ""), { f: S, s: 9.5, b: 1 }) + 14), ry, { f: S, s: 9.5 });
+    ry += 13;
+    T("GSTIN:", px + 46, ry, { f: S, s: 9.5, b: 1 });
+    T(p.gstin || "", nx, ry, { f: S, s: 9.5, b: 1 });
+    return ry + 11;
+  };
+  let ry = party("Consignee (Ship to):", inv.consignee, top + 15);
+  ry = party("Buyers (Bill to):", inv.buyerSame ? inv.consignee : inv.buyer, ry + 9);
+  const detH = Math.max(124, Math.max(ly, ry) - top + 2);
+  R.rect(L, top, FW, detH); R.line(D, top, D, top + detH);
+  y = top + detH;
+
+  // Items table
+  const cf = [0, 0.1786, 0.395, 0.5421, 0.6667, 0.7648, 1].map(f => L + f * FW);
+  const mid = i => (cf[i] + cf[i + 1]) / 2;
+  const tTop = y;
+  R.rect(L, y, FW, 14, { fill: GREY });
+  ["S. No.", "Description of Goods", "HSN/SAC", "Qty.", "Rate", "Amount"].forEach((h, i) => T(h, mid(i), y + 10.5, { f: S, s: 10.5, b: 1, align: "center" }));
+  const bodyTop = y + 14;
+  let iy = bodyTop + 17;
+  const items = c.items.filter(it => it.desc || it.amount);
+  items.forEach((it, idx) => {
+    const lines = wrap(it.desc || "", cf[2] - cf[1] - 10, { f: A, s: 11 });
+    lines.forEach((ln, k) => T(ln, mid(1), iy + k * 13, { f: A, s: 11, align: "center" }));
+    const cw = i => cf[i + 1] - cf[i] - 5;
+    T(String(idx + 1), mid(0), iy, { f: A, s: 11, align: "center" });
+    T(it.hsn || "", mid(2), iy, { f: A, s: 11, align: "center", maxW: cw(2) });
+    if (String(it.qty).trim() !== "") T(fmtQty(it.qty) + (it.unit || ""), mid(3), iy, { f: A, s: 11, align: "center", maxW: cw(3) });
+    if (String(it.rate).trim() !== "") T(fmt(it.rate) + "/-", mid(4), iy, { f: A, s: 11, align: "center", maxW: cw(4) });
+    T(fmt(it.amount) + "/-", mid(5), iy, { f: A, s: 11, align: "center", maxW: cw(5) });
+    iy += lines.length * 13 + 9;
+  });
+  const taxLines = c.mode === "intra" ? [["CGST Output", c.cgst], ["SGST Output", c.sgst]] : [["IGST Output", c.igst]];
+  if (inv.roundOff !== false) taxLines.push(["Round Off", c.roundOff]);
+  const hsnRows = Math.max(1, c.groups.length);
+  const tailH = 15 + 24 + 30 + 13 + 14 * hsnRows + 15 + 18 + 105 + 18;
+  const minBody = Math.max(140, Math.min(220 + (H - 792), H - tailH - bodyTop));
+  const bodyH = Math.max(minBody, iy - bodyTop + taxLines.length * 13 + 14);
+  let tly = bodyTop + bodyH - 10 - (taxLines.length - 1) * 13;
+  for (const [lab, val] of taxLines) {
+    T(lab, mid(2), tly, { f: S, s: 10.5, b: 1, align: "center" });
+    T(fmt(val) + "/-", mid(5), tly, { f: A, s: 11, align: "center", maxW: cf[6] - cf[5] - 5 });
+    tly += 13;
+  }
+  const tRow = bodyTop + bodyH;
+  R.rect(L, tRow, FW, 15, { fill: GREY });
+  T("Total", mid(2), tRow + 11, { f: S, s: 10.5, b: 1, align: "center" });
+  T(fmt(c.total) + "/-", mid(5), tRow + 11.2, { f: A, s: 11.5, b: 1, align: "center", maxW: cf[6] - cf[5] - 5 });
+  R.rect(L, bodyTop, FW, bodyH);
+  for (let i = 1; i < 6; i++) R.line(cf[i], tTop, cf[i], tRow + 15);
+  y = tRow + 15;
+
+  // Amount in words
+  const lab1 = "Total Chargeable Amount (in words): ";
+  const wLines = wrap(c.words, FW - 12 - wid(lab1, { f: A, s: 10.5, b: 1 }), { f: A, s: 10.5 });
+  const wH = 9 + wLines.length * 12.5;
+  R.rect(L, y, FW, wH);
+  T(lab1, L + 6, y + 14, { f: A, s: 10.5, b: 1 });
+  wLines.forEach((ln, i) => T(ln, L + 7.5 + wid(lab1, { f: A, s: 10.5, b: 1 }), y + 14 + i * 12.5, { f: A, s: 10.5 }));
+  y += wH;
+
+  // HSN summary
+  const intra = c.mode === "intra";
+  const hf = intra ? [0, 0.2805, 0.444, 0.5069, 0.605, 0.6667, 0.7648, 1] : [0, 0.2805, 0.444, 0.53, 0.7648, 1];
+  const hx = hf.map(f => L + f * FW), hm = i => (hx[i] + hx[i + 1]) / 2;
+  const nT = hx.length - 1, hTop = y;
+  R.rect(L, y, FW, 43, { fill: GREY, stroke: false });
+  const hb = { f: A, s: 10.5, b: 1, align: "center" };
+  T("HSN/ SAC", hm(0), y + 13, hb);
+  T("Taxable Value", hm(1), y + 13, hb);
+  if (intra) {
+    T("Central Tax", (hx[2] + hx[4]) / 2, y + 13, hb); T("(CGST)", (hx[2] + hx[4]) / 2, y + 25, hb);
+    T("State Tax", (hx[4] + hx[6]) / 2, y + 13, hb); T("(SGST)", (hx[4] + hx[6]) / 2, y + 25, hb);
+  } else {
+    T("Integrated Tax", (hx[2] + hx[4]) / 2, y + 13, hb); T("(IGST)", (hx[2] + hx[4]) / 2, y + 25, hb);
+  }
+  T("Total Tax", hm(nT - 1), y + 13, hb); T("Amount", hm(nT - 1), y + 25, hb);
+  R.rect(hx[2], y + 30, hx[nT - 1] - hx[2], 13, { fill: "#ffffff", stroke: false });
+  R.line(hx[2], y + 30, hx[nT - 1], y + 30);
+  for (let i = 2; i < nT - 1; i += 2) { T("Rate", hm(i), y + 40, { f: A, s: 10.5, b: 1, align: "center" }); T("Amount", hm(i + 1), y + 40, { f: A, s: 10.5, b: 1, align: "center" }); }
+  y += 43;
+  const rows = c.groups.length ? c.groups : [{ hsn: "", rate: 0, taxable: 0, cgst: 0, sgst: 0, igst: 0, tax: 0 }];
+  const pct = r => (Math.round(r * 100) / 100) + "%";
+  const HT = (s, i, yy, o) => T(s, hm(i), yy, { f: A, s: 10.5, align: "center", maxW: hx[i + 1] - hx[i] - 4, ...o });
+  for (const g of rows) {
+    R.line(L, y, RX, y);
+    HT(g.hsn, 0, y + 10.5);
+    HT(fmt(g.taxable) + "/-", 1, y + 10.5);
+    if (intra) {
+      HT(pct(g.rate / 2), 2, y + 10.5, { b: 1 }); HT(fmt(g.cgst), 3, y + 10.5);
+      HT(pct(g.rate / 2), 4, y + 10.5, { b: 1 }); HT(fmt(g.sgst), 5, y + 10.5);
+    } else {
+      HT(pct(g.rate), 2, y + 10.5, { b: 1 }); HT(fmt(g.igst), 3, y + 10.5);
+    }
+    HT(fmt(g.tax) + "/-", nT - 1, y + 10.5);
+    y += 14;
+  }
+  R.lineWidth(1.2); R.line(L, y, RX, y); R.lineWidth(0.75);
+  const one = c.rates.length === 1;
+  HT("Total", 0, y + 11, { b: 1 });
+  HT(fmt(c.taxable) + "/-", 1, y + 11);
+  if (intra) {
+    if (one) { HT(pct(c.rates[0] / 2), 2, y + 11, { b: 1 }); HT(pct(c.rates[0] / 2), 4, y + 11, { b: 1 }); }
+    HT(fmt(c.cgst), 3, y + 11); HT(fmt(c.sgst), 5, y + 11);
+  } else {
+    if (one) HT(pct(c.rates[0]), 2, y + 11, { b: 1 });
+    HT(fmt(c.igst), 3, y + 11);
+  }
+  HT(fmt(c.tax) + "/-", nT - 1, y + 11);
+  y += 15;
+  R.rect(L, hTop, FW, y - hTop);
+  for (let i = 1; i < nT; i++) R.line(hx[i], (i === 3 || (intra && i === 5)) ? hTop + 30 : hTop, hx[i], y);
+
+  // Tax in words
+  const lab2 = "Tax Amount (in words): ";
+  const tLines = wrap(c.taxWords, FW - 12 - wid(lab2, { f: A, s: 10.5, b: 1 }), { f: A, s: 10.5 });
+  const tH = 6 + tLines.length * 12.5;
+  R.rect(L, y, FW, tH, { fill: GREY });
+  T(lab2, L + 6, y + 12.5, { f: A, s: 10.5, b: 1 });
+  tLines.forEach((ln, i) => T(ln, L + 7.5 + wid(lab2, { f: A, s: 10.5, b: 1 }), y + 12.5 + i * 12.5, { f: A, s: 10.5 }));
+  y += tH;
+
+  // Footer
+  const fH = 106, D2 = L + FW * 0.4906;
+  R.rect(L, y, FW, fH); R.line(D2, y, D2, y + fH);
+  T("Declaration:", L + 6, y + 17, { f: A, s: 10.5, b: 1 });
+  let dy = y + 29;
+  const decl = prof.declaration || "We declare that this invoice shows the actual price of the goods described and that all the details are true and correct.";
+  for (const ln of wrap(decl, D2 - L - 12, { f: A, s: 9.5 }).slice(0, 4)) { T(ln, L + 6, dy, { f: A, s: 9.5 }); dy += 11.5; }
+  if (prof.bank) for (const ln of wrap(prof.bank, D2 - L - 12, { f: A, s: 8.5 }).slice(0, 3)) { T(ln, L + 6, dy, { f: A, s: 8.5 }); dy += 10; }
+  if (prof.city) T(`(SUBJECT TO ${prof.city.toUpperCase()} JURISDICTION)`, (L + D2) / 2, y + fH - 13, { f: A, s: 10.5, b: 1, align: "center" });
+  const sc = (D2 + RX) / 2;
+  const forLine = prof.signFor || ("For " + (prof.name || ""));
+  if (prof.sign) {
+    T(forLine, sc, y + 18, { f: A, s: 10.5, b: 1, align: "center" });
+    const bw = 130, bh = 56, lw = prof.signW || 3, lh = prof.signH || 1;
+    const k = Math.min(bw / lw, bh / lh), iw = lw * k, ih = lh * k;
+    R.image(prof.sign, sc - iw / 2, y + 24 + (bh - ih) / 2, iw, ih);
+    T("(Authorized Signatory)", sc, y + fH - 12, { f: A, s: 10.5, b: 1, align: "center" });
+  } else {
+    T(forLine, sc, y + 66, { f: A, s: 10.5, b: 1, align: "center" });
+    T("(Authorized Signatory)", sc, y + 79, { f: A, s: 10.5, b: 1, align: "center" });
+  }
+  return { bottom: y + fH, overflow: y + fH > H - 8 };
+}
+
+// Renderers
+function pdfRenderer(doc) {
+  const fam = o => (o.f === "serif" ? "times" : "helvetica");
+  const set = o => { doc.setFont(fam(o), o.b ? "bold" : "normal"); doc.setFontSize(o.s || 10); };
+  return {
+    text(s, x, y, o = {}) { set(o); doc.setTextColor(o.color || "#000000"); doc.text(s, x, y, o.align ? { align: o.align } : undefined); },
+    width(s, o = {}) { set(o); return doc.getTextWidth(s); },
+    rect(x, y, w, h, o = {}) {
+      if (o.fill) doc.setFillColor(o.fill);
+      doc.setDrawColor("#000000");
+      const st = o.stroke === false ? null : "S";
+      if (o.fill && st) doc.rect(x, y, w, h, "FD"); else if (o.fill) doc.rect(x, y, w, h, "F"); else doc.rect(x, y, w, h, "S");
+    },
+    line(a, b, c, d) { doc.setDrawColor("#000000"); doc.line(a, b, c, d); },
+    lineWidth(w) { doc.setLineWidth(w); },
+    image(src, x, y, w, h) {
+      const fmtI = /^data:image\/png/i.test(src) ? "PNG" : "JPEG";
+      try { doc.addImage(src, fmtI, x, y, w, h); } catch (e) { /* skip bad image */ }
+    }
+  };
+}
+function canvasRenderer(ctx, images) {
+  const font = o => `${o.b ? "700 " : ""}${o.s || 10}px ${o.f === "serif" ? "Tinos, 'Times New Roman', Times, serif" : "Arimo, Arial, Helvetica, sans-serif"}`;
+  return {
+    text(s, x, y, o = {}) { ctx.font = font(o); ctx.fillStyle = o.color || "#000"; ctx.textAlign = o.align || "left"; ctx.textBaseline = "alphabetic"; ctx.fillText(s, x, y); },
+    width(s, o = {}) { ctx.font = font(o); return ctx.measureText(s).width; },
+    rect(x, y, w, h, o = {}) {
+      if (o.fill) { ctx.fillStyle = o.fill; ctx.fillRect(x, y, w, h); }
+      if (o.stroke !== false) { ctx.strokeStyle = "#000"; ctx.strokeRect(x, y, w, h); }
+    },
+    line(a, b, c, d) { ctx.strokeStyle = "#000"; ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); },
+    lineWidth(w) { ctx.lineWidth = w; },
+    image(src, x, y, w, h) { const im = images && images.get(src); if (im && im.complete && im.naturalWidth) ctx.drawImage(im, x, y, w, h); }
+  };
+}
+
+</script>
+<script>
+(() => {
+"use strict";
+const IN_CLAUDE = !!(window.claude && window.claude.use);
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem("bb." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("bb." + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
+};
+const todayISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const stateOptions = sel => `<option value="">Select state</option>` + Object.entries(GST_STATES)
+  .map(([c, n]) => `<option value="${c}"${c === sel ? " selected" : ""}>${c} · ${esc(n)}</option>`).join("");
+const slug = s => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "party";
+
+// ---------- state ----------
+const S = {
+  mode: "local", db: null,
+  profile: LS.get("profile", {}),
+  invoices: LS.get("invoices", []),
+  customers: LS.get("customers", []),
+  draft: null, view: LS.get("view", "bill"),
+  images: new Map()
+};
+const emptyParty = () => ({ name: "", address: "", state: "", code: "", gstin: "" });
+function newItem() { return { desc: "", hsn: "", qty: "", unit: S.profile.defaultUnit || "kg", rate: "", gst: String(S.profile.defaultGst ?? 18) }; }
+// Next number after the highest saved bill; keeps a prefix/suffix and zero-padding ("AS/26/009" -> "AS/26/010").
+function nextNo() {
+  let best = null;
+  const nos = S.invoices.map(i => i.no);
+  if (S.profile.lastBillNo) nos.push(S.profile.lastBillNo);
+  for (const no of nos) {
+    const m = String(no || "").trim().match(/^(.*?)(\d+)(\D*)$/); if (!m) continue;
+    const n = parseInt(m[2], 10);
+    if (!best || n > best.n) best = { n, pre: m[1], w: m[2].length, suf: m[3] };
+  }
+  if (!best) return "1";
+  return best.pre + String(best.n + 1).padStart(best.w, "0") + best.suf;
+}
+function defaultPos() { return S.profile.defaultPos || S.profile.stateCode || gstCode(S.profile.gstin) || "08"; }
+function newDraft() {
+  return { id: "", no: nextNo(), date: todayISO(), deliveryNote: "", payTerms: S.profile.defaultTerms || "Online/UPI", buyerOrderNo: "",
+    pos: defaultPos(), copyLabel: "Original for recipient", vehicleNo: "", ewayBill: "", consignee: emptyParty(), buyerSame: true, buyer: emptyParty(),
+    items: [newItem()], taxMode: "auto", roundOff: true };
+}
+S.draft = LS.get("draft", null) || newDraft();
+let draftNoAuto = !S.draft.id;
+
+// ---------- storage ----------
+function setStoreLabel() {
+  $("#storeDot").classList.toggle("on", S.mode === "db" || !IN_CLAUDE);
+  let t = S.mode === "db" ? "Saved to your account" : IN_CLAUDE ? "Saved on this device only" : "Saved on this phone · back up from Business tab";
+  if (!IN_CLAUDE && typeof cloud !== "undefined" && cloud.st.on) {
+    const waiting = cloud.st.queue.length || cloud.st.backupDue;
+    t = cloud.busy ? "Uploading to Google Drive…" : waiting ? "Drive upload waiting · tap to upload" : "Saved on phone · backed up to Google Drive";
+  }
+  $("#storeState").textContent = t;
+}
+// Saves a file: through Claude's download prompt inside Claude, as a normal browser download elsewhere.
+async function saveFile(filename, data, mime) {
+  if (IN_CLAUDE) {
+    let dl = null;
+    try { dl = await window.claude.use("downloads"); } catch (e) { dl = null; }
+    if (!dl) throw { code: "unavailable" };
+    await dl.save({ filename, data }); return;
+  }
+  const blob = data instanceof Blob ? data : new Blob([data], { type: mime || "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+const canShareFiles = (() => {
+  try { return !IN_CLAUDE && !!navigator.canShare && navigator.canShare({ files: [new File(["x"], "x.pdf", { type: "application/pdf" })] }); }
+  catch (e) { return false; }
+})();
+function dbErr(e) {
+  const code = e && e.code;
+  if (code === "invalid_argument") return "You don't have permission to save in this bill book. Ask the owner to make you an editor.";
+  if (code === "quota_exceeded") return "Storage is full. Delete some old bills, then try again.";
+  return "Couldn't save just now. Check your connection and try again.";
+}
+async function initStore() {
+  setStoreLabel();
+  if (!IN_CLAUDE) { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* optional */ } return; }
+  let db = null;
+  try { db = await window.claude.use("db"); } catch (e) { db = null; }
+  if (!db) { setStoreLabel(); return; }
+  S.db = db; S.mode = "db"; setStoreLabel();
+  db.doc("biz/profile").onSnapshot(snap => {
+    S.profile = snap.exists ? { ...snap.data() } : {};
+    S.images.clear(); renderHeader(); if (S.view === "biz") renderBiz(); refresh();
+  }, () => {});
+  db.collection("invoices").orderBy("updatedAt", "desc").limit(1000).onSnapshot(snap => {
+    S.invoices = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    if (draftNoAuto && !S.draft.id && S.draft.no !== nextNo()) { S.draft.no = nextNo(); const el = $("#f-no"); if (el && document.activeElement !== el) el.value = S.draft.no; saveDraftLocal(); refresh(); }
+    if ($("#btnNext")) updateNextButtons();
+    if (S.view === "saved") renderSaved();
+  }, () => {});
+  db.collection("customers").onSnapshot(snap => {
+    S.customers = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    renderPartyPickers(); if (S.view === "biz") renderCustomers();
+  }, () => {});
+}
+async function putDoc(path, data) {
+  if (S.mode === "db") { await S.db.doc(path).set(JSON.parse(JSON.stringify(data))); return; }
+  const [col, id] = path.split("/");
+  if (col === "biz") { S.profile = data; LS.set("profile", data); return; }
+  const arr = col === "invoices" ? S.invoices : S.customers;
+  const i = arr.findIndex(x => x.id === id); const row = { ...data, id };
+  if (i >= 0) arr[i] = row; else arr.unshift(row);
+  if (col === "invoices") arr.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  LS.set(col, arr);
+}
+async function delDoc(path) {
+  if (S.mode === "db") { await S.db.doc(path).delete(); return; }
+  const [col, id] = path.split("/");
+  const arr = (col === "invoices" ? S.invoices : S.customers).filter(x => x.id !== id);
+  if (col === "invoices") S.invoices = arr; else S.customers = arr;
+  LS.set(col, arr);
+}
+
+// ---------- ui helpers ----------
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3200); }
+let draftT;
+function saveDraftLocal() { clearTimeout(draftT); draftT = setTimeout(() => LS.set("draft", S.draft), 300); scheduleAutoSave(); }
+
+// ---------- auto-save ----------
+let asT = null, saving = false, savePending = false, lastSavedSig = "";
+function draftSig() { const d = { ...S.draft }; delete d.updatedAt; return JSON.stringify(d); }
+function billReady() {
+  const d = S.draft, p = d.buyerSame ? d.consignee : d.buyer;
+  return !!(p && String(p.name || "").trim()) && d.items.some(it => num(it.qty) * num(it.rate) > 0) && !!String(d.no || "").trim();
+}
+function setSaveState(kind) {
+  const el = $("#saveState"); if (!el) return;
+  const txt = {
+    saved: "Saved",
+    dirty: "Changes not saved yet. They save when you download the PDF or tap Save bill.",
+    ready: "Draft on this phone. Saves when you download the PDF or tap Save bill.",
+    saving: "Saving…",
+    waiting: "Draft on this phone. Add a party name and an item to finish the bill.",
+    clash: `Bill #${S.draft.no} already exists. Change the invoice number.`,
+    error: "Not saved. Check your connection and try again."
+  }[kind] || "";
+  el.textContent = txt; el.dataset.kind = kind;
+}
+// While typing, the bill is only a draft on this device; the account copy is written on the final save.
+function scheduleAutoSave() {
+  if (S.draft.id) setSaveState(draftSig() === lastSavedSig ? "saved" : "dirty");
+  else setSaveState(billReady() ? "ready" : "waiting");
+}
+const PAY = ["Online/UPI", "Cash", "Bank/Cheque"];
+function normPay(v) {
+  if (PAY.includes(v)) return v;
+  const s = String(v || "").toLowerCase();
+  if (/cash/.test(s)) return "Cash";
+  if (/bank|cheque|check|neft|rtgs|dd/.test(s)) return "Bank/Cheque";
+  return "Online/UPI";
+}
+// Keeps an older saved value selectable in a dropdown (not used for payment mode).
+function ensureOption(el, v) {
+  if (el.tagName !== "SELECT" || !v || el.id === "f-terms" || el.id.startsWith("pick-") || /-code$/.test(el.id)) return;
+  if (![...el.options].some(o => o.value === String(v))) { const o = document.createElement("option"); o.textContent = String(v); el.appendChild(o); }
+}
+function getPath(o, p) { return p.split(".").reduce((a, k) => (a == null ? a : a[k]), o); }
+function setPath(o, p, v) { const ks = p.split("."); const last = ks.pop(); const t = ks.reduce((a, k) => (a[k] ??= {}), o); t[last] = v; }
+
+function renderHeader() {
+  const p = S.profile;
+  $("#bizName").textContent = p.name || "Bill Book";
+  $("#mark").innerHTML = p.logo ? `<img alt="" src="${esc(p.logo)}">` : "₹";
+  $("#setupNote").hidden = !!(p.name && p.gstin);
+}
+
+// ---------- bill form ----------
+function partyCard(key, title) {
+  const p = S.draft[key] || emptyParty();
+  const opts = S.customers.slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+    .map(c => `<option value="${esc(c.id)}">${esc(c.name)}${c.gstin ? " · " + esc(c.gstin) : ""}</option>`).join("");
+  return `<div class="card-h"><h2>${title}</h2><button class="btn small ghost" type="button" data-savecust="${key}">Save to customers</button></div>
+    <label class="f"><span>Pick a saved customer</span><select data-pick="${key}" id="pick-${key}"><option value="">${S.customers.length ? "Choose…" : "No saved customers yet"}</option>${opts}</select></label>
+    <label class="f"><span>Party name</span><input type="text" id="${key}-name" data-b="${key}.name" value="${esc(p.name)}"></label>
+    <label class="f"><span>Address</span><textarea id="${key}-address" data-b="${key}.address" rows="2">${esc(p.address)}</textarea></label>
+    <div class="grid2">
+      <label class="f"><span>GSTIN</span><input type="text" id="${key}-gstin" data-b="${key}.gstin" autocapitalize="characters" value="${esc(p.gstin)}"></label>
+      <label class="f"><span>State</span><select id="${key}-code" data-b="${key}.code">${stateOptions(p.code)}</select></label>
+    </div>
+    <div class="hint" id="${key}-hint"></div>`;
+}
+function renderPartyPickers() {
+  for (const key of ["consignee", "buyer"]) {
+    const sel = $(`#pick-${key}`); if (!sel) continue;
+    const opts = S.customers.slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+      .map(c => `<option value="${esc(c.id)}">${esc(c.name)}${c.gstin ? " · " + esc(c.gstin) : ""}</option>`).join("");
+    sel.innerHTML = `<option value="">${S.customers.length ? "Choose…" : "No saved customers yet"}</option>${opts}`;
+  }
+}
+function itemHTML(it, i) {
+  const gstOpts = ["0", "5", "12", "18", "28"].map(g => `<option${String(it.gst) === g ? " selected" : ""}>${g}</option>`).join("");
+  return `<div class="item" data-i="${i}">
+    <div class="item-h"><span>Item ${i + 1}</span><span class="item-amt num" id="amt-${i}"></span></div>
+    <label class="f"><span>Description of goods</span><input type="text" id="it-${i}-desc" data-f="desc" value="${esc(it.desc)}"></label>
+    <div class="grid3">
+      <label class="f"><span>HSN/SAC</span><input type="text" id="it-${i}-hsn" data-f="hsn" inputmode="numeric" value="${esc(it.hsn)}"></label>
+      <label class="f"><span>Qty</span><input type="text" id="it-${i}-qty" data-f="qty" inputmode="decimal" value="${esc(it.qty)}"></label>
+      <label class="f"><span>Unit</span><input type="text" id="it-${i}-unit" data-f="unit" list="dl-units" value="${esc(it.unit)}"></label>
+    </div>
+    <div class="grid3">
+      <label class="f"><span>Rate (₹)</span><input type="text" id="it-${i}-rate" data-f="rate" inputmode="decimal" value="${esc(it.rate)}"></label>
+      <label class="f"><span>GST %</span><select id="it-${i}-gst" data-f="gst">${gstOpts}</select></label>
+      <div style="display:flex;align-items:end;justify-content:end">${S.draft.items.length > 1 ? `<button class="xbtn" type="button" data-rm="${i}">Remove</button>` : ""}</div>
+    </div>
+    <div class="hint hsn-note" id="hsnnote-${i}">${hsnNoteHTML(it, i)}</div>
+  </div>`;
+}
+function renderItems() {
+  $("#items").innerHTML = S.draft.items.map(itemHTML).join("");
+  $("#itemCount").textContent = S.draft.items.length + (S.draft.items.length === 1 ? " item" : " items");
+}
+function renderBill() {
+  const d = S.draft;
+  d.payTerms = normPay(d.payTerms);
+  if (!d.pos) d.pos = defaultPos();
+  $("#f-pos").innerHTML = stateOptions(d.pos);
+  $("#billTitle").textContent = d.id ? `Bill #${d.no}` : "New bill";
+  updateNextButtons();
+  if (d.id && !lastSavedSig) lastSavedSig = draftSig();
+  scheduleAutoSave();
+  for (const el of $$("#v-bill [data-b]")) {
+    if (el.closest("#card-consignee, #card-buyer")) continue;
+    const v = getPath(d, el.dataset.b);
+    if (el.type === "checkbox") el.checked = el.dataset.b === "roundOff" ? v !== false : !!v;
+    else { ensureOption(el, v); el.value = v ?? ""; }
+  }
+  $("#card-consignee").innerHTML = partyCard("consignee", "Ship to (consignee)");
+  $("#card-buyer").innerHTML = partyCard("buyer", "Bill to (buyer)");
+  $("#card-buyer").hidden = !!d.buyerSame;
+  renderItems();
+  refresh();
+  if (!d.id) d.items.forEach((it, i) => { if (it.desc && !String(it.hsn || "").trim()) autoHsn(i, false); });
+}
+
+// ---------- HSN / SAC auto-assign ----------
+// Built-in list for a steel fabrication business. Order matters: fabricated work is checked before raw sections.
+const HSN_RULES = [
+  [/hinge|\block\b|handle|tower bolt|kabza|aldrop|stopper/i, "8302", "Base-metal fittings and mountings"],
+  [/frame ?work|fabricat|structur|shed|truss|gate|grill|grille|railing|staircase|stair case|ladder|shutter|canopy|tower|mezzanine|platform|column|pillar|purlin/i, "7308", "Structures and parts of structures of iron/steel"],
+  [/bolt|nut|washer|screw|anchor|fastener/i, "7318", "Screws, bolts, nuts and washers of iron/steel"],
+  [/\bnails?\b/i, "7317", "Nails of iron/steel"],
+  [/mesh|jali|netting|chain ?link|barbed/i, "7314", "Wire mesh, netting and fencing of iron/steel"],
+  [/electrode|welding rod/i, "8311", "Welding electrodes and rods"],
+  [/seamless/i, "7304", "Seamless tubes and pipes of iron/steel"],
+  [/pipe|tube|hollow|\bshs\b|\brhs\b/i, "7306", "Other tubes and pipes (welded, hollow sections)"],
+  [/gi sheet|galvani[sz]|colou?r coated|roofing sheet|tin sheet|ppgi|profile sheet|corrugated/i, "7210", "Coated flat-rolled steel (GI / colour-coated sheets)"],
+  [/cr sheet|cold rolled|crca/i, "7209", "Cold-rolled flat steel"],
+  [/\bflat\b|patti|patta/i, "7211", "Flat-rolled steel under 600 mm wide (MS flats)"],
+  [/plate|chequered|checkered|hr sheet|hr coil|hot rolled sheet/i, "7208", "Hot-rolled flat steel (plates, HR sheets)"],
+  [/angle|channel|beam|joist|girder|t[- ]?section|tee|section/i, "7216", "Angles, shapes and sections of iron/non-alloy steel"],
+  [/tmt|rebar|saria|sariya|round bar|square bar|\bbars?\b|\brods?\b/i, "7214", "Bars and rods of iron/non-alloy steel"],
+  [/wire/i, "7217", "Wire of iron/non-alloy steel"],
+  [/transport|freight|cartage|carriage|delivery charge/i, "9965", "Goods transport services (SAC)"],
+  [/job ?work/i, "9988", "Job work / manufacturing services on others' goods (SAC)"],
+  [/erection|install|labou?r|works contract|construction|civil work/i, "9954", "Construction services (SAC)"]
+];
+function localHsn(desc) {
+  for (const [re, code, label] of HSN_RULES) if (re.test(desc)) return { code, label };
+  return null;
+}
+const GST_PORTAL = "https://services.gst.gov.in/services/searchhsnsac";
+function hsnNoteHTML(it, i) {
+  const note = it.hsnNote ? `<span>${esc(it.hsnNote)}</span>` : "";
+  const find = IN_CLAUDE && it.desc && !it.hsnBusy ? `<button class="linkbtn" type="button" data-findhsn="${i}">${it.hsn ? "Suggest again" : "Find HSN"}</button>` : "";
+  const busy = it.hsnBusy ? `<span>Looking up HSN…</span>` : "";
+  return `${note}${busy}<span class="hsn-acts">${find}<a href="${GST_PORTAL}" target="_blank" rel="noopener">Check on GST portal</a></span>`;
+}
+function paintHsn(i) {
+  const it = S.draft.items[i]; if (!it) return;
+  const inp = $(`#it-${i}-hsn`); if (inp && document.activeElement !== inp) inp.value = it.hsn || "";
+  const n = $(`#hsnnote-${i}`); if (n) n.innerHTML = hsnNoteHTML(it, i);
+}
+const hsnTimers = {};
+function scheduleHsn(i) { clearTimeout(hsnTimers[i]); hsnTimers[i] = setTimeout(() => autoHsn(i, false), 700); }
+async function sampleGranted() {
+  try { const p = window.claude && await window.claude.use("permissions"); return !!p && (await p.state("sample")) === "granted"; }
+  catch (e) { return false; }
+}
+async function autoHsn(i, fromClick) {
+  const it = S.draft.items[i]; if (!it) return;
+  const desc = String(it.desc || "").trim();
+  if (!desc) return;
+  if (!fromClick && String(it.hsn || "").trim() && !it.hsnAuto) return; // never overwrite a code you typed
+  const hit = fromClick ? null : localHsn(desc);
+  if (hit) {
+    Object.assign(it, { hsn: hit.code, hsnAuto: true, hsnNote: `Auto: ${hit.code} · ${hit.label}.` });
+    paintHsn(i); saveDraftLocal(); refresh(); return;
+  }
+  if (!fromClick && (!IN_CLAUDE || !(await sampleGranted()))) {
+    if (it.hsnAuto) { it.hsn = ""; }
+    it.hsnAuto = !!it.hsnAuto;
+    it.hsnNote = IN_CLAUDE ? "Not in the built-in list. Tap Find HSN to get a suggestion." : "Not in the built-in list. Look it up on the GST portal and type it in.";
+    paintHsn(i); saveDraftLocal(); refresh(); return;
+  }
+  let sample = null;
+  try { sample = window.claude && await window.claude.use("sample"); } catch (e) { sample = null; }
+  if (!sample) { it.hsnNote = "Suggestions aren't available here. Type the HSN/SAC code yourself."; paintHsn(i); return; }
+  it.hsnBusy = true; paintHsn(i);
+  try {
+    const r = await sample.json(
+      `You assign Indian GST HSN/SAC codes for tax invoices. Seller: a steel fabrication and steel trading business in India.\n` +
+      `Item description on the invoice: "${desc.slice(0, 200)}".\n` +
+      `Reply with only JSON: {"code": "<4-digit HSN for goods or 4-digit SAC for services>", "label": "<what that heading covers, max 9 words>"}`,
+      { modelTier: "quick" });
+    if (S.draft.items[i] !== it || String(it.desc || "").trim() !== desc) return; // item changed meanwhile
+    const code = String(r && r.code || "").replace(/\D/g, "").slice(0, 8);
+    if (code.length >= 4) Object.assign(it, { hsn: code, hsnAuto: true, hsnNote: `Suggested: ${code} · ${String(r.label || "").slice(0, 80)}. Please verify.` });
+    else it.hsnNote = "Couldn't find a code for this description. Type it yourself.";
+  } catch (e) {
+    it.hsnNote = e && e.code === "not_granted" ? "Suggestions were not allowed. Type the HSN/SAC code yourself."
+      : e && e.code === "rate_limited" ? "Too many lookups just now. Try again in a minute." : "Couldn't get a suggestion. Type the code or try again.";
+  } finally { it.hsnBusy = false; }
+  paintHsn(i); saveDraftLocal(); refresh();
+}
+
+function refresh() {
+  const c = compute(S.draft, S.profile);
+  c.items.forEach((it, i) => { const el = $("#amt-" + i); if (el) el.textContent = it.amount ? "₹ " + fmt(it.amount) : ""; });
+  for (const b of $$(".seg button")) b.setAttribute("aria-pressed", String((S.draft.taxMode || "auto") === b.dataset.tax));
+  const sName = code => GST_STATES[code] || "—";
+  $("#taxHint").textContent = !c.seller ? "Set your business state in the Business tab so GST type can be picked automatically."
+    : !c.pos ? "Pick the place of supply to choose GST type."
+    : c.autoMode === "inter" ? `Place of supply is ${sName(c.pos)}, you're in ${sName(c.seller)}: inter-state, so IGST applies.`
+    : `Place of supply is ${sName(c.pos)}, your own state: CGST + SGST applies.`;
+  const w = $("#warns"); w.hidden = !c.warnings.length; w.innerHTML = c.warnings.map(x => `<div>${esc(x)}</div>`).join("");
+  const rows = [["Taxable value", c.taxable]];
+  if (c.mode === "intra") { rows.push(["CGST", c.cgst], ["SGST", c.sgst]); } else rows.push(["IGST", c.igst]);
+  if (S.draft.roundOff !== false) rows.push(["Round off", c.roundOff]);
+  $("#sum").innerHTML = rows.map(([k, v]) => `<div><span>${k}</span><span class="num">${fmt(v)}</span></div>`).join("")
+    + `<div class="tot"><span>Total</span><span class="num">₹ ${fmt(c.total)}</span></div>`;
+  $("#words").textContent = c.words;
+  $("#tbTotal").textContent = "₹ " + fmt(c.total);
+  $("#tbSub").textContent = `Bill #${S.draft.no || "—"} · ${c.mode === "intra" ? "CGST + SGST" : "IGST"}`;
+  for (const key of ["consignee", "buyer"]) {
+    const h = $(`#${key}-hint`); if (!h) continue;
+    const p = S.draft[key] || {}; const gc = gstCode(p.gstin);
+    h.textContent = p.gstin && !gc ? "GSTIN should be 15 characters and start with the 2-digit state code." : gc ? `GSTIN state: ${gc} · ${GST_STATES[gc]}` : "";
+  }
+  if (S.view === "preview") schedulePreview();
+}
+
+// form events
+$("#v-bill").addEventListener("input", onFormEdit);
+$("#v-bill").addEventListener("change", onFormEdit);
+function onFormEdit(e) {
+  const el = e.target;
+  if (el.dataset.pick !== undefined) {
+    if (e.type !== "change" || !el.value) return;
+    const c = S.customers.find(x => x.id === el.value); if (!c) return;
+    const key = el.dataset.pick;
+    S.draft[key] = { name: c.name || "", address: c.address || "", state: c.state || GST_STATES[c.code] || "", code: c.code || "", gstin: c.gstin || "" };
+    $(`#card-${key}`).innerHTML = partyCard(key, key === "consignee" ? "Ship to (consignee)" : "Bill to (buyer)");
+    saveDraftLocal(); refresh(); return;
+  }
+  if (el.dataset.b) {
+    let v = el.type === "checkbox" ? el.checked : el.value;
+    if (/\.gstin$/.test(el.dataset.b)) { v = v.toUpperCase(); if (el.value !== v) { const p = el.selectionStart; el.value = v; el.setSelectionRange(p, p); } }
+    setPath(S.draft, el.dataset.b, v);
+    if (el.dataset.b === "no") draftNoAuto = false;
+    const m = el.dataset.b.match(/^(consignee|buyer)\.(gstin|code)$/);
+    if (m) {
+      const p = S.draft[m[1]];
+      if (m[2] === "gstin") { const gc = gstCode(v); if (gc && !p.code && e.type === "input") { p.code = gc; p.state = GST_STATES[gc]; const s = $(`#${m[1]}-code`); if (s) s.value = gc; } }
+      else p.state = GST_STATES[v] || "";
+    }
+    if (el.dataset.b === "buyerSame") $("#card-buyer").hidden = !!v;
+    saveDraftLocal(); refresh(); return;
+  }
+  const item = el.closest(".item");
+  if (item && el.dataset.f) {
+    const i = +item.dataset.i, it = S.draft.items[i];
+    it[el.dataset.f] = el.value;
+    if (el.dataset.f === "hsn") { it.hsnAuto = false; it.hsnNote = el.value.trim() ? "" : it.hsnNote; paintHsn(i); }
+    if (el.dataset.f === "desc") scheduleHsn(i);
+    saveDraftLocal(); refresh();
+  }
+}
+$("#v-bill").addEventListener("click", async e => {
+  const fh = e.target.closest("[data-findhsn]");
+  if (fh) { autoHsn(+fh.dataset.findhsn, true); return; }
+  const rm = e.target.closest("[data-rm]");
+  if (rm) { S.draft.items.splice(+rm.dataset.rm, 1); renderItems(); saveDraftLocal(); refresh(); return; }
+  const tx = e.target.closest("[data-tax]");
+  if (tx) { S.draft.taxMode = tx.dataset.tax; saveDraftLocal(); refresh(); return; }
+  const sc = e.target.closest("[data-savecust]");
+  if (sc) {
+    const p = S.draft[sc.dataset.savecust] || {};
+    if (!p.name) { toast("Enter the party name first."); return; }
+    const existing = S.customers.find(c => (c.gstin && c.gstin === p.gstin) || (c.name || "").toLowerCase() === p.name.toLowerCase());
+    const id = existing ? existing.id : slug(p.name) + (p.gstin ? "-" + p.gstin.toLowerCase() : "");
+    try { await putDoc("customers/" + id, { ...p, state: p.state || GST_STATES[p.code] || "", updatedAt: Date.now() }); renderPartyPickers(); toast(existing ? `Updated ${p.name}` : `Saved ${p.name} to customers`); }
+    catch (err) { toast(dbErr(err)); }
+  }
+});
+$("#btnAddItem").addEventListener("click", () => {
+  S.draft.items.push(newItem()); renderItems(); saveDraftLocal(); refresh();
+  const i = S.draft.items.length - 1; const el = $(`#it-${i}-desc`); if (el) el.focus();
+});
+let freshArmed = false;
+$("#btnNew").addEventListener("click", () => {
+  if (!S.draft.id && !billReady() && !freshArmed && S.draft.items.some(it => it.desc || it.rate)) {
+    freshArmed = true; $("#btnNew").textContent = "Tap again to clear"; setTimeout(() => { freshArmed = false; updateNextButtons(); }, 3000); return;
+  }
+  freshArmed = false;
+  startNextBill();
+});
+$("#btnNext").addEventListener("click", startNextBill);
+
+async function saveBill(quiet, auto) {
+  const d = S.draft;
+  if (!String(d.no || "").trim()) { if (!auto) toast("Enter an invoice number."); return false; }
+  const findClash = () => S.invoices.find(x => String(x.no).trim() === String(d.no).trim() && x.id !== d.id);
+  if (findClash() && !d.id && draftNoAuto) { d.no = nextNo(); const f = $("#f-no"); if (f) f.value = d.no; }
+  if (findClash()) { setSaveState("clash"); if (!auto) toast(`Bill #${d.no} already exists. Change the invoice number.`); return false; }
+  if (d.id && draftSig() === lastSavedSig) { setSaveState("saved"); if (!quiet) toast(`Bill #${d.no} saved`); return true; }
+  setSaveState("saving");
+  const c = compute(d, S.profile);
+  const now = Date.now();
+  const id = d.id || "inv-" + now.toString(36);
+  const party = d.buyerSame ? d.consignee : d.buyer;
+  const clean = JSON.parse(JSON.stringify(d));
+  for (const it of clean.items || []) delete it.hsnBusy;
+  const row = { ...clean, id, total: c.total, partyName: party.name || "", createdAt: d.createdAt || now, updatedAt: now };
+  try { await putDoc("invoices/" + id, row); }
+  catch (err) { setSaveState("error"); if (!auto) toast(dbErr(err)); return false; }
+  if (S.draft !== d) return true; // user already moved to another bill
+  d.id = id; d.createdAt = row.createdAt; draftNoAuto = false;
+  lastSavedSig = draftSig(); LS.set("draft", d);
+  $("#billTitle").textContent = `Bill #${d.no}`;
+  setSaveState("saved"); updateNextButtons();
+  await saveParties(d);
+  if (!IN_CLAUDE) { cloudMark(id); cloudSync(); }
+  if (!quiet) toast(`Bill #${d.no} saved`);
+  return true;
+}
+// Adds or refreshes the bill's parties in saved customers (matched by GSTIN, else by name).
+async function upsertCustomer(p) {
+  if (!p || !String(p.name || "").trim()) return false;
+  const name = p.name.trim(), gstin = String(p.gstin || "").trim().toUpperCase();
+  const existing = S.customers.find(c => (gstin && String(c.gstin || "").toUpperCase() === gstin))
+    || S.customers.find(c => (c.name || "").trim().toLowerCase() === name.toLowerCase() && (!c.gstin || !gstin));
+  const data = { name, address: p.address || "", code: p.code || "", state: p.state || GST_STATES[p.code] || "", gstin };
+  if (existing && ["name", "address", "code", "state", "gstin"].every(k => String(existing[k] || "") === String(data[k] || ""))) return false;
+  const id = existing ? existing.id : slug(name) + (gstin ? "-" + gstin.toLowerCase() : "");
+  await putDoc("customers/" + id, { ...data, updatedAt: Date.now() });
+  return true;
+}
+async function saveParties(d) {
+  try {
+    const a = await upsertCustomer(d.consignee);
+    const b = !d.buyerSame ? await upsertCustomer(d.buyer) : false;
+    if (a || b) renderPartyPickers();
+  } catch (err) { /* the bill itself is saved; a customer-list failure shouldn't block it */ }
+}
+function updateNextButtons() {
+  const saved = !!S.draft.id;
+  $("#btnNew").textContent = saved ? "Next bill →" : "Start fresh";
+  const nb = $("#btnNext"); nb.hidden = !saved; nb.textContent = `Next bill #${nextNo()}`;
+}
+async function startNextBill() {
+  clearTimeout(asT);
+  if (billReady() && !(S.draft.id && draftSig() === lastSavedSig)) {
+    const ok = await saveBill(true, true);
+    if (!ok) { toast("This bill couldn't be saved. Fix the message above, then try again."); return; }
+  }
+  const prev = S.draft.no;
+  S.draft = newDraft(); draftNoAuto = true; lastSavedSig = ""; LS.set("draft", S.draft);
+  if (S.view !== "bill") go("bill"); else renderBill();
+  window.scrollTo(0, 0);
+  toast(prev && S.invoices.some(i => i.no === prev) ? `Bill #${prev} saved. Now on bill #${S.draft.no}.` : `New bill #${S.draft.no}`);
+}
+$("#btnSave").addEventListener("click", () => saveBill(false));
+
+// ---------- PDF ----------
+function pageOf(p) { return PAGE[p.pageSize] || PAGE.letter; }
+function buildPdf(inv) {
+  const { jsPDF } = window.jspdf;
+  const pg = pageOf(S.profile);
+  const doc = new jsPDF({ unit: "pt", format: [pg.w, pg.h], compress: true });
+  doc.setProperties({ title: `Invoice ${inv.no}`, creator: S.profile.name || "Bill Book" });
+  drawInvoice(pdfRenderer(doc), inv, S.profile, compute(inv, S.profile), pg);
+  return doc.output("blob");
+}
+function pdfName(inv) {
+  const party = (inv.buyerSame ? inv.consignee : inv.buyer) || {};
+  return `Invoice_${inv.no}_${(party.name || "bill").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "_")}.pdf`;
+}
+async function downloadPdf(inv, saveFirst) {
+  if (!window.jspdf) { toast("The PDF tool didn't load. Check your connection and reopen the page."); return; }
+  if (saveFirst) { const ok = await saveBill(true); if (!ok) return; inv = S.draft; }
+  inv = { ...inv, payTerms: normPay(inv.payTerms) };
+  try { await saveFile(pdfName(inv), buildPdf(inv), "application/pdf"); toast(saveFirst ? `Bill #${inv.no} saved and PDF downloaded` : "PDF downloaded"); }
+  catch (e) {
+    if (e && e.code === "declined") return;
+    toast(e && e.code === "unavailable" ? "Downloads aren't available in this view." : e && e.code === "rate_limited" ? "A save prompt is already open." : "Couldn't save the PDF. Try again.");
+  }
+}
+async function sharePdf(inv, saveFirst) {
+  if (!window.jspdf) { toast("The PDF tool didn't load. Reopen the app."); return; }
+  if (saveFirst) { const ok = await saveBill(true); if (!ok) return; inv = S.draft; }
+  inv = { ...inv, payTerms: normPay(inv.payTerms) };
+  const file = new File([buildPdf(inv)], pdfName(inv), { type: "application/pdf" });
+  try { await navigator.share({ files: [file], title: `Invoice ${inv.no}` }); }
+  catch (e) { if (e && e.name === "AbortError") return; toast("Couldn't open sharing. Use Download PDF instead."); }
+}
+$("#btnPdf1").addEventListener("click", () => downloadPdf(S.draft, true));
+$("#btnPdf2").addEventListener("click", () => downloadPdf(S.draft, true));
+for (const id of ["#btnShare1", "#btnShare2"]) {
+  const b = $(id); if (!b) continue;
+  b.hidden = !canShareFiles;
+  b.addEventListener("click", () => sharePdf(S.draft, true));
+}
+
+// ---------- preview ----------
+let pvT;
+function schedulePreview() { clearTimeout(pvT); pvT = setTimeout(drawPreview, 120); }
+function loadImg(src) {
+  if (!src) return Promise.resolve();
+  if (S.images.has(src)) { const im = S.images.get(src); return im.complete ? Promise.resolve() : new Promise(r => { im.onload = im.onerror = r; }); }
+  const im = new Image(); S.images.set(src, im);
+  return new Promise(r => { im.onload = im.onerror = r; im.src = src; });
+}
+async function drawPreview() {
+  const cv = $("#sheet"); const pg = pageOf(S.profile);
+  try { await Promise.all(["400 10px Tinos", "700 10px Tinos", "400 10px Arimo", "700 10px Arimo"].map(f => document.fonts.load(f))); } catch (e) { /* fallback fonts */ }
+  await Promise.all([loadImg(S.profile.logo), loadImg(S.profile.sign)]);
+  const cssW = cv.clientWidth || 600, dpr = Math.min(3, window.devicePixelRatio || 1);
+  const k = cssW / pg.w;
+  cv.width = Math.round(cssW * dpr); cv.height = Math.round(pg.h * k * dpr);
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(k * dpr, 0, 0, k * dpr, 0, 0);
+  const c = compute(S.draft, S.profile);
+  const res = drawInvoice(canvasRenderer(ctx, S.images), S.draft, S.profile, c, pg);
+  $("#pvTitle").textContent = `Preview · bill #${S.draft.no || "—"}`;
+  $("#pvSize").textContent = (S.profile.pageSize === "a4" ? "A4" : "Letter") + " size";
+  const w = [...c.warnings]; if (res.overflow) w.unshift("Too many items to fit on one page. Shorten descriptions or split into two bills.");
+  if (!S.profile.name) w.unshift("Your business details are empty. Fill them in the Business tab.");
+  const pw = $("#pvWarn"); pw.hidden = !w.length; pw.innerHTML = w.map(x => `<div>${esc(x)}</div>`).join("");
+}
+window.addEventListener("resize", () => { if (S.view === "preview") schedulePreview(); });
+
+// ---------- saved list ----------
+let delArmed = null;
+function renderSaved() {
+  const q = $("#q").value.trim().toLowerCase();
+  const rows = S.invoices.filter(i => !q || String(i.no).toLowerCase().includes(q) || (i.partyName || "").toLowerCase().includes(q));
+  $("#savedCount").textContent = S.invoices.length ? `${S.invoices.length} bill${S.invoices.length === 1 ? "" : "s"}` : "";
+  if (!S.invoices.length) { $("#savedList").innerHTML = `<div class="empty">No saved bills yet.<br>Fill a bill and tap <b>Save bill</b>. It will show up here.</div>`; return; }
+  if (!rows.length) { $("#savedList").innerHTML = `<div class="empty">No bills match “${esc(q)}”.</div>`; return; }
+  $("#savedList").innerHTML = rows.map(i => `<div class="inv">
+    <div class="inv-top"><b>#${esc(i.no)} · ${esc(i.partyName || "No party")}</b><span class="num">₹ ${fmt(i.total)}</span></div>
+    <div class="inv-sub"><span>${esc(dmy(i.date))}</span>${S.draft.id === i.id ? `<span class="pill">Open in editor</span>` : ""}</div>
+    <div class="row">
+      <button class="btn small" type="button" data-open="${esc(i.id)}">Open</button>
+      <button class="btn small" type="button" data-copy="${esc(i.id)}">Copy as new</button>
+      <button class="btn small" type="button" data-pdf="${esc(i.id)}">PDF</button>
+      <button class="btn small ghost danger" type="button" data-del="${esc(i.id)}">${delArmed === i.id ? "Tap again to delete" : "Delete"}</button>
+    </div></div>`).join("");
+}
+$("#q").addEventListener("input", renderSaved);
+$("#savedList").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const find = id => S.invoices.find(x => x.id === id);
+  if (b.dataset.open) {
+    const i = find(b.dataset.open); if (!i) return;
+    clearTimeout(asT); if (billReady() && !(S.draft.id && draftSig() === lastSavedSig)) await saveBill(true, true);
+    const d = JSON.parse(JSON.stringify(i)); delete d.total; delete d.partyName; delete d.updatedAt;
+    S.draft = d; draftNoAuto = false; lastSavedSig = draftSig(); LS.set("draft", S.draft); go("bill");
+  }
+  else if (b.dataset.copy) {
+    const i = find(b.dataset.copy); if (!i) return;
+    const d = JSON.parse(JSON.stringify(i)); delete d.createdAt; delete d.updatedAt; delete d.total; delete d.partyName;
+    clearTimeout(asT); if (billReady() && !(S.draft.id && draftSig() === lastSavedSig)) await saveBill(true, true);
+    S.draft = { ...d, id: "", no: nextNo(), date: todayISO(), payTerms: normPay(d.payTerms) }; delete S.draft.createdAt;
+    draftNoAuto = true; lastSavedSig = ""; LS.set("draft", S.draft); go("bill"); toast(`Copied into new bill #${S.draft.no}`);
+  }
+  else if (b.dataset.pdf) { const i = find(b.dataset.pdf); if (i) downloadPdf(i, false); }
+  else if (b.dataset.del) {
+    if (delArmed !== b.dataset.del) { delArmed = b.dataset.del; renderSaved(); setTimeout(() => { if (delArmed === b.dataset.del) { delArmed = null; renderSaved(); } }, 3500); return; }
+    const i = find(b.dataset.del); delArmed = null;
+    try {
+      await delDoc("invoices/" + b.dataset.del); if (S.draft.id === b.dataset.del) { S.draft.id = ""; LS.set("draft", S.draft); }
+      if (!IN_CLAUDE) { cloud.st.queue = cloud.st.queue.filter(x => x !== b.dataset.del); cloudMark(null); }
+      toast(`Bill #${i ? i.no : ""} deleted`); renderSaved();
+    }
+    catch (err) { toast(dbErr(err)); }
+  }
+});
+
+// ---------- business ----------
+const PF = ["name", "address", "gstin", "email", "mobile", "extraLine", "declaration", "city", "signFor", "bank", "pageSize", "defaultGst", "defaultUnit", "defaultTerms", "defaultPos", "lastBillNo"];
+let bizImgs = {};
+function renderBiz() {
+  const p = S.profile;
+  $("#p-stateCode").innerHTML = stateOptions(p.stateCode || gstCode(p.gstin));
+  $("#p-defaultPos").innerHTML = stateOptions(p.defaultPos || p.stateCode || gstCode(p.gstin) || "08");
+  for (const k of PF) {
+    const el = $("#p-" + k); if (!el) continue;
+    if (k === "defaultPos") continue;
+    const v = p[k] ?? (k === "pageSize" ? "letter" : k === "defaultGst" ? "18" : k === "defaultTerms" ? "Online/UPI" : "");
+    if (k === "defaultTerms" && !["Online/UPI", "Cash", "Bank/Cheque"].includes(v)) { el.value = "Online/UPI"; continue; }
+    el.value = v;
+  }
+  if (!p.declaration) $("#p-declaration").value = "We declare that this invoice shows the actual price of the goods described and that all the details are true and correct.";
+  bizImgs = { logo: p.logo || "", logoW: p.logoW, logoH: p.logoH, sign: p.sign || "", signW: p.signW, signH: p.signH };
+  paintImgs(); renderCustomers();
+}
+function paintImgs() {
+  $("#logoBox").innerHTML = bizImgs.logo ? `<img alt="Logo" src="${esc(bizImgs.logo)}">` : "<span>No logo</span>";
+  $("#signBox").innerHTML = bizImgs.sign ? `<img alt="Signature" src="${esc(bizImgs.sign)}">` : "<span>No sign</span>";
+}
+function readImage(file, maxSide) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onerror = reject;
+    fr.onload = () => {
+      const im = new Image();
+      im.onerror = reject;
+      im.onload = () => {
+        const k = Math.min(1, maxSide / Math.max(im.naturalWidth, im.naturalHeight));
+        const w = Math.round(im.naturalWidth * k), h = Math.round(im.naturalHeight * k);
+        const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+        const ctx = cv.getContext("2d");
+        const png = /png|gif|webp|svg/i.test(file.type);
+        if (!png) { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); }
+        ctx.drawImage(im, 0, 0, w, h);
+        resolve({ src: png ? cv.toDataURL("image/png") : cv.toDataURL("image/jpeg", 0.9), w, h });
+      };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+$("#p-logo").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const r = await readImage(f, 600); bizImgs.logo = r.src; bizImgs.logoW = r.w; bizImgs.logoH = r.h; paintImgs(); toast("Logo added. Tap Save business details."); }
+  catch (err) { toast("Couldn't read that image. Try a JPG or PNG."); }
+  e.target.value = "";
+});
+$("#p-sign").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const r = await readImage(f, 500); bizImgs.sign = r.src; bizImgs.signW = r.w; bizImgs.signH = r.h; paintImgs(); toast("Signature added. Tap Save business details."); }
+  catch (err) { toast("Couldn't read that image. Try a JPG or PNG."); }
+  e.target.value = "";
+});
+$("#rmLogo").addEventListener("click", () => { bizImgs.logo = ""; paintImgs(); });
+$("#rmSign").addEventListener("click", () => { bizImgs.sign = ""; paintImgs(); });
+$("#p-gstin").addEventListener("input", e => {
+  const v = e.target.value.toUpperCase(); if (e.target.value !== v) e.target.value = v;
+  const gc = gstCode(v); if (gc) $("#p-stateCode").value = gc;
+});
+$("#btnSaveBiz").addEventListener("click", async () => {
+  const p = { ...S.profile };
+  for (const k of PF) { const el = $("#p-" + k); if (el) p[k] = el.value.trim ? el.value.trim() : el.value; }
+  p.address = $("#p-address").value.replace(/\s+$/g, "");
+  p.declaration = $("#p-declaration").value.trim();
+  p.bank = $("#p-bank").value.trim();
+  p.stateCode = $("#p-stateCode").value; p.state = GST_STATES[p.stateCode] || "";
+  Object.assign(p, bizImgs);
+  p.updatedAt = Date.now();
+  try {
+    await putDoc("biz/profile", p); S.profile = p; S.images.clear(); renderHeader();
+    if (draftNoAuto && !S.draft.id) { S.draft.no = nextNo(); LS.set("draft", S.draft); }
+    if (!IN_CLAUDE) cloudMark(null);
+    refresh(); toast("Business details saved");
+  }
+  catch (err) { toast(dbErr(err)); }
+});
+let custDelArmed = null;
+function renderCustomers() {
+  const el = $("#custList");
+  if (!S.customers.length) { el.innerHTML = `<div class="empty">No customers yet. On a bill, tap <b>Save to customers</b> to reuse a party next time.</div>`; return; }
+  el.innerHTML = S.customers.slice().sort((a, b) => (a.name || "").localeCompare(b.name || "")).map(c => `<div class="inv">
+    <div class="inv-top"><b>${esc(c.name)}</b><span class="hint">${esc(c.code ? c.code + " · " + (GST_STATES[c.code] || "") : "")}</span></div>
+    <div class="inv-sub"><span>${esc(c.gstin || "No GSTIN")}</span>
+      <button class="btn small ghost danger" type="button" data-cdel="${esc(c.id)}">${custDelArmed === c.id ? "Tap again to remove" : "Remove"}</button></div></div>`).join("");
+}
+$("#custList").addEventListener("click", async e => {
+  const b = e.target.closest("[data-cdel]"); if (!b) return;
+  if (custDelArmed !== b.dataset.cdel) { custDelArmed = b.dataset.cdel; renderCustomers(); return; }
+  custDelArmed = null;
+  try { await delDoc("customers/" + b.dataset.cdel); renderPartyPickers(); renderCustomers(); toast("Customer removed"); } catch (err) { toast(dbErr(err)); }
+});
+
+// backup
+function backupJSON() {
+  return JSON.stringify({ app: "bill-book", version: 1, exportedAt: new Date().toISOString(), profile: S.profile, customers: S.customers, invoices: S.invoices }, null, 1);
+}
+$("#btnExport").addEventListener("click", async () => {
+  try { await saveFile(`bill-book-backup-${todayISO()}.json`, backupJSON(), "application/json"); toast("Backup saved"); }
+  catch (e) { if (!(e && e.code === "declined")) toast("Couldn't save the backup."); }
+});
+async function importBackup(e) {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try { await importData(JSON.parse(await f.text())); }
+  catch (err) { toast(err && err.code ? dbErr(err) : "That file isn't a Bill Book backup."); }
+}
+async function importData(j) {
+  {
+    if (!j || j.app !== "bill-book") throw new Error("not a backup");
+    if (j.profile && Object.keys(j.profile).length) await putDoc("biz/profile", j.profile);
+    for (const c of j.customers || []) if (c.id) await putDoc("customers/" + c.id, c);
+    for (const i of j.invoices || []) if (i.id) await putDoc("invoices/" + i.id, i);
+    if (S.mode !== "db" && j.profile) S.profile = j.profile;
+    S.images.clear();
+    if (draftNoAuto && !S.draft.id) { S.draft.no = nextNo(); S.draft.pos = S.draft.pos || defaultPos(); LS.set("draft", S.draft); }
+    renderHeader(); renderPartyPickers(); go(S.view);
+    toast(`Restored ${(j.invoices || []).length} bills and ${(j.customers || []).length} customers`);
+  }
+}
+for (const id of ["#importFile", "#importFile2"]) { const el = $(id); if (el) el.addEventListener("change", importBackup); }
+
+// ---------- Google Drive backup (stand-alone app only; Google sign-in is blocked inside Claude) ----------
+const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email";
+const DAPI = "https://www.googleapis.com/drive/v3/files", UAPI = "https://www.googleapis.com/upload/drive/v3/files";
+const cloud = {
+  st: Object.assign({ clientId: "", email: "", on: false, pdfs: true, folderId: "", billsId: "", backupId: "", pdfIds: {}, queue: [], backupDue: false, lastSync: 0, error: "" }, LS.get("cloud", {})),
+  token: null, exp: 0, client: null, waiters: [], gis: null, busy: false
+};
+const cloudSave = () => LS.set("cloud", cloud.st);
+const tokenValid = () => !!cloud.token && Date.now() < cloud.exp - 60000;
+function loadGis() {
+  if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+  if (cloud.gis) return cloud.gis;
+  cloud.gis = new Promise((res, rej) => {
+    const s = document.createElement("script"); s.src = "https://accounts.google.com/gsi/client"; s.async = true;
+    s.onload = res; s.onerror = () => { cloud.gis = null; rej(new Error("gis")); }; document.head.appendChild(s);
+  });
+  return cloud.gis;
+}
+function tokenClient() {
+  if (cloud.client && cloud.client._cid === cloud.st.clientId) return cloud.client;
+  const settle = (fn, v) => { const w = cloud.waiters.splice(0); w.forEach(x => x[fn](v)); };
+  const c = google.accounts.oauth2.initTokenClient({
+    client_id: cloud.st.clientId, scope: DRIVE_SCOPE,
+    callback: r => {
+      if (r.error) { settle("reject", r); return; }
+      cloud.token = r.access_token; cloud.exp = Date.now() + (r.expires_in || 3600) * 1000; settle("resolve", cloud.token);
+    },
+    error_callback: e => settle("reject", e)
+  });
+  c._cid = cloud.st.clientId; cloud.client = c; return c;
+}
+// Opens Google's sign-in window. Call it straight from a tap, or the phone may block the window.
+function requestToken(pickAccount) {
+  const p = new Promise((resolve, reject) => cloud.waiters.push({ resolve, reject }));
+  const opts = { prompt: pickAccount ? "select_account" : "" };
+  if (!pickAccount && cloud.st.email) opts.hint = cloud.st.email;
+  tokenClient().requestAccessToken(opts);
+  return p;
+}
+// Called first thing in Save / Download / Share / Next taps, so an expired sign-in is renewed inside the tap.
+function cloudPrime() {
+  if (IN_CLAUDE || !cloud.st.on || tokenValid() || !(window.google && google.accounts && google.accounts.oauth2)) return;
+  requestToken(false).then(() => cloudSync()).catch(() => {});
+}
+async function gfetch(url, opts = {}) {
+  if (!tokenValid()) throw { code: "auth" };
+  const r = await fetch(url, { ...opts, headers: { ...(opts.headers || {}), Authorization: "Bearer " + cloud.token } });
+  if (r.status === 401) { cloud.token = null; throw { code: "auth" }; }
+  if (!r.ok) throw { code: "http", status: r.status };
+  return r;
+}
+async function driveFolder(name, parent) {
+  const q = `name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false` + (parent ? ` and '${parent}' in parents` : "");
+  const found = await (await gfetch(`${DAPI}?fields=files(id)&q=${encodeURIComponent(q)}`)).json();
+  if (found.files && found.files.length) return found.files[0].id;
+  const made = await (await gfetch(`${DAPI}?fields=id`, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, mimeType: "application/vnd.google-apps.folder", ...(parent ? { parents: [parent] } : {}) }) })).json();
+  return made.id;
+}
+async function folderOk(id) {
+  if (!id) return false;
+  try { const f = await (await gfetch(`${DAPI}/${id}?fields=id,trashed`)).json(); return !f.trashed; }
+  catch (e) { if (e.code === "http") return false; throw e; }
+}
+function multipart(meta, mime, data) {
+  const b = "bb" + Math.random().toString(36).slice(2);
+  return { headers: { "Content-Type": `multipart/related; boundary=${b}` },
+    body: new Blob([`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: ${mime}\r\n\r\n`, data, `\r\n--${b}--`]) };
+}
+async function driveUpload({ id, name, mime, data, parent }) {
+  if (id) {
+    try {
+      const m = multipart({ name, trashed: false }, mime, data);
+      await gfetch(`${UAPI}/${id}?uploadType=multipart&fields=id`, { method: "PATCH", ...m });
+      return id;
+    } catch (e) { if (e.code !== "http" || e.status !== 404) throw e; }
+  }
+  const m = multipart({ name, parents: [parent] }, mime, data);
+  return (await (await gfetch(`${UAPI}?uploadType=multipart&fields=id`, { method: "POST", ...m })).json()).id;
+}
+function cloudMark(invId) {
+  if (IN_CLAUDE || !cloud.st.on) return;
+  if (invId && cloud.st.pdfs && !cloud.st.queue.includes(invId)) cloud.st.queue.push(invId);
+  cloud.st.backupDue = true; cloudSave();
+}
+async function cloudSync() {
+  if (IN_CLAUDE || !cloud.st.on || cloud.busy) return;
+  if (!cloud.st.queue.length && !cloud.st.backupDue) { paintCloud(); return; }
+  if (!tokenValid()) { paintCloud(); return; }
+  cloud.busy = true; paintCloud();
+  try {
+    if (!(await folderOk(cloud.st.folderId))) { cloud.st.folderId = await driveFolder("Bill Book"); cloud.st.billsId = ""; }
+    if (cloud.st.queue.length) {
+      if (!(await folderOk(cloud.st.billsId))) cloud.st.billsId = await driveFolder("Bills", cloud.st.folderId);
+      while (cloud.st.queue.length) {
+        const id = cloud.st.queue[0], inv = S.invoices.find(x => x.id === id);
+        if (inv && window.jspdf) {
+          const doc = { ...inv, payTerms: normPay(inv.payTerms) };
+          cloud.st.pdfIds[id] = await driveUpload({ id: cloud.st.pdfIds[id], name: pdfName(doc), mime: "application/pdf", data: buildPdf(doc), parent: cloud.st.billsId });
+        }
+        cloud.st.queue.shift(); cloudSave();
+      }
+    }
+    if (cloud.st.backupDue) {
+      cloud.st.backupDue = false;
+      try { cloud.st.backupId = await driveUpload({ id: cloud.st.backupId, name: "bill-book-backup.json", mime: "application/json", data: backupJSON(), parent: cloud.st.folderId }); }
+      catch (e) { cloud.st.backupDue = true; throw e; }
+    }
+    cloud.st.lastSync = Date.now(); cloud.st.error = "";
+  } catch (e) {
+    cloud.st.error = e && e.code === "auth" ? "" : "Upload to Drive failed. It will retry on your next save, or tap Back up now.";
+  } finally { cloud.busy = false; cloudSave(); paintCloud(); }
+}
+function agoText(t) {
+  if (!t) return "never"; const m = Math.round((Date.now() - t) / 60000);
+  return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : dmy(new Date(t).toISOString().slice(0, 10));
+}
+function paintCloud() {
+  setStoreLabel();
+  const card = $("#cloudCard"); if (!card) return;
+  card.hidden = IN_CLAUDE; if (IN_CLAUDE) return;
+  const st = cloud.st, waiting = st.queue.length || st.backupDue;
+  $("#c-client").value = $("#c-client").value || st.clientId || window.BB_GOOGLE_CLIENT_ID || "";
+  $("#cloudSetup").hidden = st.on; $("#cloudOn").hidden = !st.on;
+  $("#c-pdfs").checked = st.pdfs !== false;
+  $("#cloudStatus").innerHTML = !st.on ? "Not connected. Bills stay only on this phone."
+    : `Connected to <b>${esc(st.email)}</b><br>` + (cloud.busy ? "Uploading to Drive…"
+      : waiting ? `${st.queue.length ? st.queue.length + " bill(s)" : "Backup"} waiting to upload.${tokenValid() ? "" : " Tap <b>Back up now</b> to sign in again."}`
+      : `Last backup: ${agoText(st.lastSync)}. Files are in Drive → <b>Bill Book</b>.`)
+    + (st.error ? `<br><span class="err">${esc(st.error)}</span>` : "");
+}
+async function cloudConnect(pickAccount) {
+  const cid = ($("#c-client").value || "").trim();
+  if (!/^[\w-]+\.apps\.googleusercontent\.com$/.test(cid)) { toast("Paste the Client ID from Google Cloud. It ends with .apps.googleusercontent.com"); return; }
+  if (cid !== cloud.st.clientId) { cloud.st.clientId = cid; cloud.client = null; }
+  try { await loadGis(); } catch (e) { toast("Couldn't reach Google. Check your internet and try again."); return; }
+  try { await requestToken(pickAccount); }
+  catch (e) { toast(e && /popup/i.test(e.type || "") ? "The Google window was blocked or closed. Tap Connect again." : "Google sign-in didn't finish. Check the Client ID and its allowed website."); return; }
+  try {
+    const me = await (await gfetch("https://www.googleapis.com/oauth2/v3/userinfo")).json();
+    if (cloud.st.email && me.email !== cloud.st.email) Object.assign(cloud.st, { folderId: "", billsId: "", backupId: "", pdfIds: {}, queue: [] });
+    Object.assign(cloud.st, { email: me.email || "your Google account", on: true, error: "" });
+    cloud.st.queue = S.invoices.map(i => i.id).filter(id => !cloud.st.pdfIds[id]);
+    cloud.st.backupDue = true; cloudSave();
+    toast(`Connected to ${cloud.st.email}`);
+    cloudSync();
+  } catch (e) { toast("Signed in, but Drive didn't answer. Make sure the Google Drive API is turned on for your project."); }
+}
+async function cloudRestore() {
+  if (!tokenValid()) { try { await requestToken(false); } catch (e) { toast("Google sign-in didn't finish."); return; } }
+  try {
+    let id = cloud.st.backupId;
+    if (!id) {
+      const q = "name='bill-book-backup.json' and trashed=false";
+      const r = await (await gfetch(`${DAPI}?fields=files(id,modifiedTime)&orderBy=modifiedTime desc&q=${encodeURIComponent(q)}`)).json();
+      id = r.files && r.files[0] && r.files[0].id;
+    }
+    if (!id) { toast("No Bill Book backup found in this Google account yet."); return; }
+    const j = await (await gfetch(`${DAPI}/${id}?alt=media`)).json();
+    cloud.st.backupId = id; cloudSave();
+    await importData(j);
+  } catch (e) { toast(e && e.code ? "Couldn't read the backup from Drive. Try again." : "The Drive backup file isn't a Bill Book backup."); }
+}
+if ($("#cloudCard")) {
+  $("#c-connect").addEventListener("click", () => cloudConnect(true));
+  $("#c-switch").addEventListener("click", () => cloudConnect(true));
+  $("#c-now").addEventListener("click", () => {
+    cloud.st.backupDue = true; cloudSave();
+    if (tokenValid()) { cloudSync(); return; }
+    loadGis().then(() => requestToken(false)).then(() => cloudSync()).catch(() => toast("Google sign-in didn't finish."));
+  });
+  $("#c-restore").addEventListener("click", () => { loadGis().then(cloudRestore).catch(() => toast("Couldn't reach Google.")); });
+  $("#c-restore2").addEventListener("click", () => {
+    if (!cloud.st.clientId && !window.BB_GOOGLE_CLIENT_ID) { go("biz"); toast("Connect your Google account in Cloud backup first."); return; }
+    if (!cloud.st.clientId) cloud.st.clientId = window.BB_GOOGLE_CLIENT_ID;
+    loadGis().then(() => requestToken(true)).then(async () => {
+      const me = await (await gfetch("https://www.googleapis.com/oauth2/v3/userinfo")).json();
+      Object.assign(cloud.st, { email: me.email, on: true }); cloudSave(); await cloudRestore(); paintCloud();
+    }).catch(() => toast("Google sign-in didn't finish."));
+  });
+  $("#c-pdfs").addEventListener("change", e => { cloud.st.pdfs = e.target.checked; if (!e.target.checked) cloud.st.queue = []; cloudSave(); paintCloud(); });
+  $("#c-off").addEventListener("click", () => {
+    try { if (cloud.token && window.google) google.accounts.oauth2.revoke(cloud.token, () => {}); } catch (e) { /* ignore */ }
+    cloud.token = null; Object.assign(cloud.st, { on: false, email: "", queue: [], backupDue: false, error: "" }); cloudSave(); paintCloud();
+    toast("Google account disconnected. Files already in Drive stay there.");
+  });
+  if (!IN_CLAUDE && (cloud.st.clientId || window.BB_GOOGLE_CLIENT_ID)) loadGis().catch(() => {});
+  $("#c-origin").textContent = location.origin && location.origin.startsWith("http") ? location.origin : "https://divyagrawal1604-png.github.io";
+  $("#c-restore2").hidden = IN_CLAUDE;
+  paintCloud();
+}
+for (const id of ["#btnSave", "#btnPdf1", "#btnPdf2", "#btnShare1", "#btnShare2", "#btnNext", "#btnNew"]) {
+  const el = $(id); if (el) el.addEventListener("click", cloudPrime, true);
+}
+const _storeEl = $("#storeState");
+if (_storeEl) _storeEl.addEventListener("click", () => { if (!IN_CLAUDE && cloud.st.on && (cloud.st.queue.length || cloud.st.backupDue)) $("#c-now").click(); });
+
+// ---------- navigation ----------
+function go(view) {
+  S.view = view; LS.set("view", view);
+  for (const v of ["bill", "preview", "saved", "biz"]) $("#v-" + v).hidden = v !== view;
+  for (const b of $$("nav.tabs [data-view]")) { if (b.dataset.view === view) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); }
+  $("#totalbar").hidden = view !== "bill";
+  if (view === "bill") renderBill();
+  if (view === "preview") drawPreview();
+  if (view === "saved") renderSaved();
+  if (view === "biz") renderBiz();
+  window.scrollTo(0, 0);
+}
+for (const b of $$("nav.tabs [data-view]")) b.addEventListener("click", () => go(b.dataset.view));
+$("#btnPreview").addEventListener("click", () => go("preview"));
+$("#btnEdit").addEventListener("click", () => go("bill"));
+
+renderHeader();
+go(["bill", "preview", "saved", "biz"].includes(S.view) ? S.view : "bill");
+initStore();
+})();
+
+</script>
+<script>
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script>
+</body>
+</html>
