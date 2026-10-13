@@ -190,7 +190,7 @@ nav.tabs button[aria-current="page"] { color: var(--accent); }
     <div class="note setup" id="setupNote" hidden>
       <div><b>Set up your bill book.</b> Restore your backup file to bring in your business details, logo, customers and old bills. Or fill them in the <b>Business</b> tab.</div>
       <div class="row">
-        <span class="btn small file primary">Restore from backup file<input type="file" id="importFile2" accept=".json,application/json"></span>
+        <span class="btn small file primary">Restore from backup file<input type="file" id="importFile2"></span>
         <button class="btn small" id="c-restore2" type="button" hidden>Restore from Google Drive</button>
       </div>
     </div>
@@ -316,7 +316,7 @@ nav.tabs button[aria-current="page"] { color: var(--accent); }
       <div class="hint">Download everything (business, customers, bills) as one file, or restore from one.</div>
       <div class="row">
         <button class="btn small" id="btnExport" type="button">Download backup</button>
-        <span class="btn small file">Restore from backup<input type="file" id="importFile" accept=".json,application/json"></span>
+        <span class="btn small file">Restore from backup<input type="file" id="importFile"></span>
       </div>
     </div>
 
@@ -754,7 +754,7 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const LS = {
   get(k, d) { try { const v = localStorage.getItem("bb." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem("bb." + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
+  set(k, v) { try { localStorage.setItem("bb." + k, JSON.stringify(v)); return true; } catch (e) { return false; } }
 };
 const todayISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 const stateOptions = sel => `<option value="">Select state</option>` + Object.entries(GST_STATES)
@@ -826,6 +826,7 @@ function dbErr(e) {
   const code = e && e.code;
   if (code === "invalid_argument") return "You don't have permission to save in this bill book. Ask the owner to make you an editor.";
   if (code === "quota_exceeded") return "Storage is full. Delete some old bills, then try again.";
+  if (code === "storage") return "This phone's browser isn't allowing the app to save. Close private/incognito mode, or check that site storage isn't blocked.";
   return "Couldn't save just now. Check your connection and try again.";
 }
 async function initStore() {
@@ -853,12 +854,12 @@ async function initStore() {
 async function putDoc(path, data) {
   if (S.mode === "db") { await S.db.doc(path).set(JSON.parse(JSON.stringify(data))); return; }
   const [col, id] = path.split("/");
-  if (col === "biz") { S.profile = data; LS.set("profile", data); return; }
+  if (col === "biz") { S.profile = data; if (!LS.set("profile", data)) throw { code: "storage" }; return; }
   const arr = col === "invoices" ? S.invoices : S.customers;
   const i = arr.findIndex(x => x.id === id); const row = { ...data, id };
   if (i >= 0) arr[i] = row; else arr.unshift(row);
   if (col === "invoices") arr.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-  LS.set(col, arr);
+  if (!LS.set(col, arr)) throw { code: "storage" };
 }
 async function delDoc(path) {
   if (S.mode === "db") { await S.db.doc(path).delete(); return; }
@@ -1449,10 +1450,24 @@ $("#btnExport").addEventListener("click", async () => {
   try { await saveFile(`bill-book-backup-${todayISO()}.json`, backupJSON(), "application/json"); toast("Backup saved"); }
   catch (e) { if (!(e && e.code === "declined")) toast("Couldn't save the backup."); }
 });
+// Reads a backup file. Phones sometimes save it as .txt or add stray bytes, so parse leniently.
+function parseBackup(text) {
+  let t = String(text || "").replace(/^﻿/, "").trim();
+  const a = t.indexOf("{"), b = t.lastIndexOf("}");
+  if (a > 0 || (b >= 0 && b < t.length - 1)) t = t.slice(a, b + 1);
+  return JSON.parse(t);
+}
 async function importBackup(e) {
-  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-  try { await importData(JSON.parse(await f.text())); }
-  catch (err) { toast(err && err.code ? dbErr(err) : "That file isn't a Bill Book backup."); }
+  const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+  let text;
+  try { text = await (f.text ? f.text() : new Response(f).text()); }
+  catch (err) { toast("Couldn't open that file. Download the backup again and pick it from Downloads."); return; }
+  let j;
+  try { j = parseBackup(text); }
+  catch (err) { toast(`"${f.name}" isn't a backup file. Pick bill-book-backup….json`); return; }
+  if (!j || j.app !== "bill-book") { toast(`"${f.name}" isn't a Bill Book backup. Pick bill-book-backup….json`); return; }
+  try { await importData(j); }
+  catch (err) { toast(err && err.code ? dbErr(err) : "Couldn't save the restored data on this phone. Close private/incognito mode and try again."); }
 }
 async function importData(j) {
   {
